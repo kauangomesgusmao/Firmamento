@@ -1,4 +1,4 @@
-const CACHE = 'firmamento-v2';
+const CACHE = 'firmamento-v3';
 const ASSETS = ['/', '/index.html'];
 
 self.addEventListener('install', e => {
@@ -14,12 +14,11 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // para requisições ao GitHub API, sempre ir na rede
-  if (e.request.url.includes('api.github.com') || e.request.url.includes('raw.githubusercontent.com')) {
+  const url = e.request.url;
+  if (url.includes('api.github.com') || url.includes('raw.githubusercontent.com') || url.includes('supabase.co')) {
     e.respondWith(fetch(e.request));
     return;
   }
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+  if (e.request.method !== 'GET') { e.respondWith(fetch(e.request)); return; }
+  e.respondWith(caches.match(e.request).then(cached => cached || fetch(e.request)));
 });
