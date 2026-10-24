@@ -353,6 +353,11 @@ z-index:300;transition:transform .25s,opacity .25s;opacity:0;pointer-events:none
 <!-- ADMIN -->
 <div id="view-admin" class="view"><div class="wrap">
   <div class="sec-head"><h2>Painel administrativo</h2></div>
+  <p style="font-family:sans-serif;font-size:.78rem;color:var(--text-dim);margin:-8px 0 20px;line-height:1.6">
+    Duas formas de ter novels no catálogo:
+    <b>1) Automática</b> — qualquer pasta com HTML dentro de <code>capitulos/</code> no GitHub já aparece sozinha (modo antigo).
+    <b>2) Cadastro</b> — use o formulário abaixo para dar capa, sinopse, gêneros e status. Cadastrar uma pasta que já vinha automática apenas a enriquece, sem duplicar.
+  </p>
 
   <div class="admin-section">
     <h3>Cadastrar / editar novel</h3>
@@ -413,11 +418,21 @@ const GH_REPO  = 'Firmamento';
 const GENRES = ['Ação','Aventura','Fantasia','Artes Marciais','Romance','Comédia','Drama','Isekai','Xianxia','Xuanhuan','Wuxia','Sistema','Harém','Ecchi','Terror','Mistério','Sci-Fi','Slice of Life','Tragédia','Sobrenatural','Histórico','Psicológico'];
 const STATUSES = ['Em andamento','Completo','Hiato','Em breve'];
 
+/* ── Descoberta automática (modo antigo) ──
+   Varre pastas do repo e lista novels SEM precisar cadastrar no Supabase.
+   - Arquivos .html soltos numa pasta  -> viram 1 novel (a pasta inteira).
+   - Cada subpasta com .html dentro     -> vira uma novel separada.
+   Metadados (capa/descrição/gênero) podem vir de um _meta.json opcional na pasta.
+   Um cadastro manual no Admin apontando a mesma pasta tem prioridade. */
+const AUTO_SCAN = true;
+const AUTO_FOLDERS = ['capitulos'];
+
 const sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let ME = null;          // auth user
 let PROFILE = null;     // {role, username}
-let NOVELS = [];        // novels metadata from supabase
+let NOVELS = [];        // novels metadata (supabase + github auto-scan)
+let AUTO_CACHE = null;   // cache das novels descobertas no github nesta sessão
 let CHAP_CACHE = {};    // slug -> [{name,content,order}]
 let FAVS = new Set();   // favorite slugs
 let authMode = 'login';
@@ -516,12 +531,91 @@ async function enterApp(user){
   route();
 }
 
-/* ═══ NOVELS DATA ═══ */
+/* ═══ NOVELS DATA (Supabase + GitHub auto-scan) ═══ */
 async function loadNovels(){
   const {data,error}=await sb.from('novels').select('*').order('updated_at',{ascending:false});
-  NOVELS = error?[]:(data||[]);
+  const supa = (error?[]:(data||[])).map(n=>({...n, source:'supabase'}));
+  // pastas já cobertas por um cadastro manual -> não duplicar no auto-scan
+  const usedFolders = new Set(supa.map(n=>normFolder(n.gh_folder)).filter(Boolean));
+  let auto = [];
+  if(AUTO_SCAN){
+    try{ auto = (await loadGithubNovels()).filter(n=>!usedFolders.has(normFolder(n.gh_folder))); }
+    catch(e){ console.warn('auto-scan falhou',e); }
+  }
+  // merge por slug: Supabase sobrescreve o auto (mesma novel enriquecida)
+  const bySlug = new Map();
+  auto.forEach(n=>bySlug.set(n.slug,n));
+  supa.forEach(n=>bySlug.set(n.slug,n));
+  NOVELS = [...bySlug.values()].sort((a,b)=>(b.updated_at||'').localeCompare(a.updated_at||'') || a.title.localeCompare(b.title));
 }
 function novelBySlug(slug){ return NOVELS.find(n=>n.slug===slug); }
+function normFolder(f){ return (f||'').replace(/^\/+|\/+$/g,''); }
+
+/* descobre novels direto da estrutura de pastas do GitHub (sem cadastro) */
+async function loadGithubNovels(){
+  if(AUTO_CACHE) return AUTO_CACHE;
+  const out=[];
+  for(const rootRaw of AUTO_FOLDERS){
+    const root=normFolder(rootRaw);
+    let items;
+    try{ items=await ghContents(root); }catch(e){ continue; }
+    const loose  = items.filter(f=>f.type==='file' && f.name.toLowerCase().endsWith('.html'));
+    const subdirs= items.filter(f=>f.type==='dir');
+    // arquivos soltos na raiz -> 1 novel (a pasta inteira)
+    if(loose.length){
+      const meta=await ghMeta(items);
+      const title=meta.title || await titleFromFirst(loose) || prettify(root);
+      out.push(mkAutoNovel(root, title, meta));
+    }
+    // cada subpasta com html -> uma novel
+    for(const d of subdirs){
+      const path=root+'/'+d.name;
+      let sub; try{ sub=await ghContents(path); }catch(e){ continue; }
+      const hs=sub.filter(f=>f.type==='file' && f.name.toLowerCase().endsWith('.html'));
+      if(!hs.length) continue;
+      const meta=await ghMeta(sub);
+      const title=meta.title || await titleFromFirst(hs) || prettify(d.name);
+      out.push(mkAutoNovel(path, title, meta));
+    }
+  }
+  AUTO_CACHE=out;
+  return out;
+}
+async function ghContents(path){
+  const r=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path.split('/').map(encodeURIComponent).join('/')}`);
+  if(!r.ok) throw new Error('gh '+r.status);
+  const j=await r.json();
+  return Array.isArray(j)?j:[];
+}
+async function ghMeta(items){
+  const m=items.find(f=>f.type==='file' && /^_?meta\.json$/i.test(f.name));
+  if(!m||!m.download_url) return {};
+  try{ const j=await fetch(m.download_url).then(r=>r.json()); return j&&typeof j==='object'?j:{}; }
+  catch(e){ return {}; }
+}
+async function titleFromFirst(htmlFiles){
+  const first=[...htmlFiles].sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}))[0];
+  if(!first||!first.download_url) return '';
+  try{
+    const html=await fetch(first.download_url).then(r=>r.text());
+    const t=new DOMParser().parseFromString(html,'text/html').title||'';
+    return t.split(/\s*[—–|]\s*|\s+-\s+/)[0].trim();  // tira " — Caps 1–10"
+  }catch(e){ return ''; }
+}
+function prettify(s){ return s.replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase()).trim(); }
+function mkAutoNovel(folder, title, meta){
+  meta=meta||{};
+  return {
+    slug: meta.slug || slugify(title) || slugify(folder),
+    title, author: meta.author||'',
+    description: meta.description||'',
+    cover_url: meta.cover_url||meta.cover||'',
+    status: meta.status||'Em andamento',
+    genres: Array.isArray(meta.genres)?meta.genres:[],
+    gh_folder: folder, updated_at: meta.updated_at||'',
+    source: 'github'
+  };
+}
 
 /* ═══ GITHUB CHAPTERS (public, token-free read) ═══ */
 async function ghList(folder){
@@ -818,8 +912,17 @@ function renderAdmin(){
 }
 function renderAdminNovels(){
   const el=document.getElementById('adm-novels');
-  el.innerHTML = NOVELS.length?NOVELS.map(n=>`<div class="adm-novel"><div class="t">${esc(n.title)}<div class="sl">${esc(n.slug)} · pasta: ${esc(n.gh_folder||'—')}</div></div>
-    <button onclick="editNovel('${n.slug}')">Editar</button><button onclick="delNovel('${n.slug}')">Excluir</button></div>`).join(''):`<div style="color:var(--text-mute);font-family:sans-serif;font-size:.8rem">Nenhuma novel ainda.</div>`;
+  if(!NOVELS.length){ el.innerHTML=`<div style="color:var(--text-mute);font-family:sans-serif;font-size:.8rem">Nenhuma novel ainda.</div>`; return; }
+  el.innerHTML = NOVELS.map(n=>{
+    const auto = n.source==='github';
+    const badge = auto
+      ? `<span style="color:var(--gold);border:1px solid color-mix(in srgb,var(--gold) 40%,transparent);border-radius:4px;padding:1px 6px;font-size:.6rem">GitHub · auto</span>`
+      : `<span style="color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:4px;padding:1px 6px;font-size:.6rem">Cadastrada</span>`;
+    const btns = auto
+      ? `<button onclick="editNovel('${n.slug}')" title="Importar para o cadastro e enriquecer (capa, gêneros, sinopse)">Importar ↗</button>`
+      : `<button onclick="editNovel('${n.slug}')">Editar</button><button onclick="delNovel('${n.slug}')">Excluir</button>`;
+    return `<div class="adm-novel"><div class="t">${esc(n.title)} ${badge}<div class="sl">${esc(n.slug)} · pasta: ${esc(n.gh_folder||'—')}</div></div>${btns}</div>`;
+  }).join('');
 }
 function slugify(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
 function clearNovelForm(){
@@ -897,7 +1000,7 @@ async function uploadFiles(){
     }catch(e){ fail++; }
   }
   admMsg('up-msg',fail?'err':'ok',`${ok} enviado(s)${fail?` · ${fail} falha(s)`:''}.`);
-  if(ok){ pendingFiles=[]; document.getElementById('up-list').innerHTML=''; Object.keys(CHAP_CACHE).forEach(k=>delete CHAP_CACHE[k]); }
+  if(ok){ pendingFiles=[]; document.getElementById('up-list').innerHTML=''; Object.keys(CHAP_CACHE).forEach(k=>delete CHAP_CACHE[k]); AUTO_CACHE=null; await loadNovels(); renderAdminNovels(); }
 }
 
 /* ═══ HELPERS ═══ */
