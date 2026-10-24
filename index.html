@@ -430,8 +430,8 @@ function goAdmin(){ showView('admin'); }
 /* ═══ GITHUB CONFIG ═══ */
 function getGhConfig(){
   return {
-    owner: localStorage.getItem('gh_owner')||'',
-    repo:  localStorage.getItem('gh_repo')||'',
+    owner: localStorage.getItem('gh_owner')||'kauangomesgusmao',
+    repo:  localStorage.getItem('gh_repo')||'Firmamento',
     token: localStorage.getItem('gh_token')||'',
     folder:localStorage.getItem('gh_folder')||'capitulos'
   };
@@ -463,7 +463,7 @@ async function ghApi(path, method='GET', body=null){
   const {token} = getGhConfig();
   const opts = {
     method,
-    headers:{'Authorization':'token '+token,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'}
+    headers:(token?{'Authorization':'token '+token,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'}:{'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'})
   };
   if(body) opts.body = JSON.stringify(body);
   const r = await fetch('https://api.github.com'+path, opts);

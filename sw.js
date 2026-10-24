@@ -1,4 +1,4 @@
-const CACHE = 'firmamento-v1';
+const CACHE = 'firmamento-v2';
 const ASSETS = ['/', '/index.html'];
 
 self.addEventListener('install', e => {
