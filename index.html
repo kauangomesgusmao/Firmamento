@@ -9,318 +9,333 @@
 <meta name="apple-mobile-web-app-title" content="Firmamento">
 <link rel="manifest" href="manifest.json">
 <title>Firmamento</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
 :root{
-  --bg:#0a0c10;--surface:#111520;--surface2:#171d2e;--border:#1e2740;
-  --text:#c8d0e8;--text-dim:#5c6b8a;--text-mute:#343e56;
-  --accent:#7c9ef8;--accent2:#c084fc;--gold:#e2b96a;
-  --nav-h:54px;--sidebar-w:280px;
-  font-size:16px;
+--bg:#0a0c10;--surface:#111520;--surface2:#171d2e;--border:#1e2740;
+--text:#c8d0e8;--text-dim:#5c6b8a;--text-mute:#343e56;
+--accent:#7c9ef8;--accent2:#c084fc;--gold:#e2b96a;
+--nav-h:56px;--sidebar-w:280px;
+font-size:16px;
 }
 [data-theme=light]{
-  --bg:#f4f1eb;--surface:#fff;--surface2:#f0ece3;--border:#ddd6c8;
-  --text:#2a2420;--text-dim:#6b5f52;--text-mute:#b0a090;
-  --accent:#3b5fc7;--accent2:#8b44c7;--gold:#b8860b;
+--bg:#f4f1eb;--surface:#fff;--surface2:#f0ece3;--border:#ddd6c8;
+--text:#2a2420;--text-dim:#6b5f52;--text-mute:#b0a090;
+--accent:#3b5fc7;--accent2:#8b44c7;--gold:#b8860b;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:'Georgia',serif;transition:background .2s,color .2s}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Georgia',serif;overflow-x:hidden;transition:background .2s,color .2s}
 button{cursor:pointer;border:none;background:none;color:inherit;font:inherit}
 a{color:inherit;text-decoration:none}
-::-webkit-scrollbar{width:4px}
+input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
-/* ── NAV ── */
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;height:var(--nav-h);
-  background:color-mix(in srgb,var(--bg) 85%,transparent);
-  backdrop-filter:blur(14px);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 16px;gap:12px;
-}
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--nav-h);
+background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);
+border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:14px}
 .logo{display:flex;align-items:center;gap:9px;cursor:pointer;flex-shrink:0}
-.logo-mark{
-  width:30px;height:30px;border-radius:7px;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#fff
-}
-.logo-text{font-size:1.05rem;color:var(--text);letter-spacing:.01em}
-.logo-text span{color:var(--accent)}
-.nav-space{flex:1}
-.nav-ic{
-  width:34px;height:34px;border-radius:7px;border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;font-size:.8rem;
-  color:var(--text-dim);background:var(--surface);transition:border-color .15s,color .15s
-}
-.nav-ic:hover{border-color:var(--accent);color:var(--accent)}
-.nav-search{
-  flex:1;max-width:260px;height:34px;
-  background:var(--surface2);border:1px solid var(--border);border-radius:7px;
-  padding:0 12px;color:var(--text);font-family:'Georgia',serif;font-size:.8rem;outline:none
-}
+.logo .ic{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#fff}
+.logo .tx{font-size:1.05rem;color:var(--text);letter-spacing:.01em}
+.logo .tx span{color:var(--accent)}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-links a{padding:7px 12px;border-radius:7px;font-size:.82rem;color:var(--text-dim);font-family:sans-serif;transition:background .12s,color .12s}
+.nav-links a:hover,.nav-links a.active{background:var(--surface2);color:var(--text)}
+.nav-search{flex:1;max-width:320px;height:36px;background:var(--surface2);border:1px solid var(--border);
+border-radius:8px;padding:0 12px;color:var(--text);font-family:sans-serif;font-size:.82rem;outline:none}
 .nav-search:focus{border-color:var(--accent)}
+.nav-spacer{flex:1}
+.nav-ic{width:34px;height:34px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+font-size:.8rem;color:var(--text-dim);background:var(--surface);transition:border-color .15s,color .15s;flex-shrink:0}
+.nav-ic:hover{border-color:var(--accent);color:var(--accent)}
+.user-chip{display:flex;align-items:center;gap:7px;padding:4px 10px 4px 4px;border-radius:20px;border:1px solid var(--border);background:var(--surface);cursor:pointer}
+.user-chip .av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#fff;font-family:sans-serif}
+.user-chip .nm{font-size:.74rem;color:var(--text-dim);font-family:sans-serif;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.menu{position:absolute;top:48px;right:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:180px;z-index:120;box-shadow:0 10px 30px rgba(0,0,0,.4);display:none}
+.menu.open{display:block}
+.menu button{display:block;width:100%;text-align:left;padding:9px 12px;border-radius:7px;font-size:.8rem;color:var(--text-dim);font-family:sans-serif}
+.menu button:hover{background:var(--surface2);color:var(--text)}
+.menu .role{font-size:.64rem;color:var(--text-mute);padding:4px 12px 8px;font-family:sans-serif;border-bottom:1px solid var(--border);margin-bottom:4px}
 
-/* ── VIEWS ── */
-.view{display:none;height:100%;padding-top:var(--nav-h)}
-.view.active{display:flex;flex-direction:column}
+/* VIEWS */
+.view{display:none;min-height:100vh;padding-top:var(--nav-h)}
+.view.active{display:block}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 64px}
 
-/* ── HOME ── */
-#view-home{overflow-y:auto}
-.hero{
-  padding:56px 24px 48px;text-align:center;
-  background:radial-gradient(ellipse 70% 50% at 50% 0%,color-mix(in srgb,var(--accent) 9%,transparent),transparent)
-}
-.hero h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:400;line-height:1.2;margin-bottom:16px}
-.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{color:var(--text-dim);font-size:.9rem;max-width:440px;margin:0 auto 32px;line-height:1.7}
-.hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.btn-p{
-  padding:10px 24px;background:var(--accent);color:#fff;border-radius:7px;
-  font-family:'Georgia',serif;font-size:.85rem;transition:opacity .15s
-}
-.btn-p:hover{opacity:.85}
-.btn-s{
-  padding:10px 24px;border:1px solid var(--border);border-radius:7px;
-  font-family:'Georgia',serif;font-size:.85rem;color:var(--text-dim);background:var(--surface);
-  transition:border-color .15s,color .15s
-}
+/* LOGIN */
+#view-login{display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px}
+#view-login.active{display:flex}
+.login-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 30px}
+.login-card .brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px}
+.login-card .brand .ic{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff}
+.login-card .brand .tx{font-size:1.4rem}
+.login-sub{text-align:center;color:var(--text-dim);font-size:.82rem;margin-bottom:26px;font-family:sans-serif}
+.login-tabs{display:flex;gap:4px;background:var(--surface2);border-radius:9px;padding:4px;margin-bottom:20px}
+.login-tabs button{flex:1;padding:8px;border-radius:7px;font-size:.8rem;color:var(--text-dim);font-family:sans-serif}
+.login-tabs button.active{background:var(--accent);color:#fff}
+.field{margin-bottom:14px}
+.field label{display:block;font-family:sans-serif;font-size:.74rem;color:var(--text-dim);margin-bottom:5px}
+.field input{width:100%;padding:11px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:sans-serif;font-size:.86rem;outline:none}
+.field input:focus{border-color:var(--accent)}
+.btn-full{width:100%;padding:12px;background:var(--accent);color:#fff;border-radius:8px;font-family:sans-serif;font-size:.86rem;transition:opacity .15s;margin-top:4px}
+.btn-full:hover{opacity:.88}
+.btn-full:disabled{opacity:.5;cursor:default}
+.auth-msg{font-family:sans-serif;font-size:.76rem;padding:9px 12px;border-radius:7px;margin-top:14px;display:none}
+.auth-msg.show{display:block}
+.auth-msg.err{background:color-mix(in srgb,#f87171 10%,transparent);color:#f87171;border:1px solid color-mix(in srgb,#f87171 25%,transparent)}
+.auth-msg.ok{background:color-mix(in srgb,#4ade80 10%,transparent);color:#4ade80;border:1px solid color-mix(in srgb,#4ade80 25%,transparent)}
+
+/* HERO / SECTIONS */
+.section{margin-bottom:40px}
+.sec-head{display:flex;align-items:baseline;gap:10px;margin-bottom:16px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+.sec-head h2{font-size:1.05rem;font-weight:400;color:var(--text);letter-spacing:.02em}
+.sec-head .ct{margin-left:auto;font-family:sans-serif;font-size:.68rem;color:var(--text-mute)}
+.sec-head a.more{margin-left:auto;font-family:sans-serif;font-size:.72rem;color:var(--accent)}
+
+/* GRID / CARDS */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:18px}
+.card{cursor:pointer}
+.cover{aspect-ratio:2/3;border-radius:9px;overflow:hidden;background:var(--surface2);border:1px solid var(--border);margin-bottom:9px;position:relative;transition:transform .2s,box-shadow .2s}
+.card:hover .cover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.4)}
+.cover img{width:100%;height:100%;object-fit:cover;display:block}
+.cover .ph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px;
+background:linear-gradient(160deg,var(--surface2),var(--surface));text-align:center}
+.cover .ph .i{font-size:1.6rem;opacity:.4}
+.cover .ph .t{font-size:.62rem;color:var(--text-dim);word-break:break-word}
+.badge{position:absolute;bottom:6px;right:6px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(4px);
+border:1px solid var(--border);border-radius:5px;font-family:sans-serif;font-size:.58rem;color:var(--text-dim);padding:2px 6px}
+.badge.st{left:6px;right:auto;color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.card h4{font-size:.78rem;font-weight:400;line-height:1.35;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .meta{font-family:sans-serif;font-size:.64rem;color:var(--text-mute);margin-top:2px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+
+/* horizontal scroller (reading history) */
+.hscroll{display:flex;gap:16px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity}
+.hscroll .card{flex:0 0 150px;scroll-snap-align:start}
+.hscroll .meta .cont{color:var(--accent)}
+
+/* FILTERS */
+.filters{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:24px}
+.filter-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.filter-row:last-child{margin-bottom:0}
+.filter-row .lab{font-family:sans-serif;font-size:.72rem;color:var(--text-dim);margin-right:4px;min-width:60px}
+.chip{padding:5px 12px;border-radius:16px;border:1px solid var(--border);background:var(--surface2);font-family:sans-serif;font-size:.72rem;color:var(--text-dim);transition:all .12s}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.filter-search{flex:1;min-width:180px;height:36px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0 12px;color:var(--text);font-family:sans-serif;font-size:.82rem;outline:none}
+.filter-search:focus{border-color:var(--accent)}
+
+/* EMPTY / LOADING */
+.empty{grid-column:1/-1;padding:48px 20px;text-align:center;color:var(--text-mute);font-family:sans-serif;font-size:.84rem;
+border:1px dashed var(--border);border-radius:12px;background:var(--surface)}
+.empty .i{font-size:2rem;margin-bottom:10px;opacity:.35}
+.loading{padding:48px;text-align:center;color:var(--text-mute);font-family:sans-serif;font-size:.85rem}
+
+/* NOVEL DETAIL */
+.novel-hero{display:flex;gap:28px;margin-bottom:28px;flex-wrap:wrap}
+.novel-hero .nc{width:220px;flex-shrink:0;aspect-ratio:2/3;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--surface2)}
+.novel-hero .nc img{width:100%;height:100%;object-fit:cover}
+.novel-hero .nc .ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.4rem;opacity:.4;background:linear-gradient(160deg,var(--surface2),var(--surface))}
+.novel-info{flex:1;min-width:260px}
+.novel-info h1{font-size:1.7rem;font-weight:400;line-height:1.25;margin-bottom:12px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.tag{padding:3px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-family:sans-serif;font-size:.68rem;color:var(--text-dim)}
+.ninfo-row{font-family:sans-serif;font-size:.82rem;color:var(--text-dim);margin-bottom:6px}
+.ninfo-row b{color:var(--text);font-weight:600}
+.stars{display:inline-flex;gap:2px;font-size:1rem;color:var(--gold);cursor:pointer}
+.stars .s{opacity:.3;transition:opacity .1s}
+.stars .s.on{opacity:1}
+.rate-ct{font-family:sans-serif;font-size:.72rem;color:var(--text-mute);margin-left:6px}
+.novel-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn-p{padding:11px 24px;background:var(--accent);color:#fff;border-radius:8px;font-family:sans-serif;font-size:.84rem;transition:opacity .15s}
+.btn-p:hover{opacity:.88}
+.btn-s{padding:11px 20px;border:1px solid var(--border);border-radius:8px;font-family:sans-serif;font-size:.84rem;color:var(--text-dim);background:var(--surface);transition:all .15s}
 .btn-s:hover{border-color:var(--accent);color:var(--accent)}
-.section{max-width:860px;margin:0 auto 48px;padding:0 20px}
-.sec-head{
-  display:flex;align-items:baseline;gap:10px;
-  margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border)
-}
-.sec-head h2{font-size:.9rem;font-weight:400;color:var(--text);letter-spacing:.02em}
-.sec-head .ct{margin-left:auto;font-family:sans-serif;font-size:.65rem;color:var(--text-mute)}
-.novels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px}
-.novel-card{cursor:pointer;transition:transform .2s}
-.novel-card:hover{transform:translateY(-3px)}
-.novel-cover{
-  aspect-ratio:2/3;border-radius:7px;overflow:hidden;
-  background:var(--surface2);border:1px solid var(--border);margin-bottom:8px;position:relative
-}
-.cover-placeholder{
-  width:100%;height:100%;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:8px;padding:12px;
-  background:linear-gradient(160deg,var(--surface2),var(--surface))
-}
-.cover-placeholder .ci{font-size:1.5rem;opacity:.4}
-.cover-placeholder .ct2{font-size:.6rem;color:var(--text-dim);text-align:center;word-break:break-word}
-.ch-badge{
-  position:absolute;bottom:5px;right:5px;
-  background:color-mix(in srgb,var(--bg) 80%,transparent);
-  backdrop-filter:blur(4px);border:1px solid var(--border);
-  border-radius:4px;font-family:sans-serif;font-size:.58rem;color:var(--text-dim);padding:2px 5px
-}
-.novel-card h4{font-size:.75rem;font-weight:400;line-height:1.4;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.novel-card .nm{font-family:sans-serif;font-size:.62rem;color:var(--text-mute);margin-top:2px}
-.empty{
-  padding:40px 20px;text-align:center;color:var(--text-mute);font-size:.82rem;
-  border:1px dashed var(--border);border-radius:10px;background:var(--surface);grid-column:1/-1
-}
-.empty .ei{font-size:1.8rem;margin-bottom:10px;opacity:.35}
+.btn-s.on{border-color:var(--gold);color:var(--gold)}
 
-/* ── STATUS BANNER ── */
-.status-banner{
-  margin:0 20px 20px;padding:10px 16px;border-radius:8px;
-  font-family:sans-serif;font-size:.78rem;display:flex;align-items:center;gap:8px;
-  background:color-mix(in srgb,var(--accent) 8%,var(--surface));
-  border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
-  color:var(--accent);max-width:860px;margin-left:auto;margin-right:auto
-}
-.status-banner.err{
-  background:color-mix(in srgb,#f87171 8%,var(--surface));
-  border-color:color-mix(in srgb,#f87171 30%,transparent);color:#f87171
-}
+.tabs{display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:20px;max-width:360px}
+.tabs button{flex:1;padding:10px;border-radius:7px;font-family:sans-serif;font-size:.82rem;color:var(--text-dim)}
+.tabs button.active{background:var(--accent);color:#fff}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+.desc{font-size:.92rem;line-height:1.75;color:var(--text);white-space:pre-wrap}
+.chap-list .ch-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:8px;cursor:pointer;transition:background .1s}
+.chap-list .ch-row:hover{background:var(--surface2)}
+.chap-list .ch-row .n{font-family:sans-serif;font-size:.72rem;color:var(--text-mute);min-width:28px}
+.chap-list .ch-row .t{flex:1;font-size:.86rem;color:var(--text-dim)}
+.chap-list .ch-row:hover .t{color:var(--text)}
 
-/* ── READER ── */
-#view-reader{flex-direction:row;overflow:hidden}
-.sidebar{
-  width:var(--sidebar-w);flex-shrink:0;border-right:1px solid var(--border);
-  background:var(--surface);display:flex;flex-direction:column;overflow:hidden;
-  transition:width .25s,transform .25s
-}
+/* COMMENTS */
+.comments{margin-top:36px}
+.cmt-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
+.cmt-box textarea{width:100%;min-height:80px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-family:sans-serif;font-size:.84rem;outline:none;resize:vertical}
+.cmt-box textarea:focus{border-color:var(--accent)}
+.cmt{border-bottom:1px solid var(--border);padding:14px 2px}
+.cmt .head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.cmt .av{width:26px;height:26px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-family:sans-serif;color:var(--accent)}
+.cmt .nm{font-family:sans-serif;font-size:.78rem;color:var(--text)}
+.cmt .dt{font-family:sans-serif;font-size:.66rem;color:var(--text-mute)}
+.cmt .body{font-size:.86rem;color:var(--text-dim);line-height:1.6}
+.cmt .del{margin-left:auto;font-family:sans-serif;font-size:.66rem;color:#f87171}
+
+/* READER */
+#view-reader{padding-top:0}
+#view-reader.active{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;border-right:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;overflow:hidden;transition:width .25s}
 .sidebar.collapsed{width:0}
-.sb-head{
-  padding:12px 14px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;flex-shrink:0
-}
+.sb-head{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px}
 .sb-title{font-size:.72rem;color:var(--text-dim);font-family:sans-serif;letter-spacing:.06em;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .sb-list{flex:1;overflow-y:auto;padding:4px}
-.ch-btn{
-  width:100%;text-align:left;padding:7px 10px;border-radius:6px;
-  font-size:.76rem;color:var(--text-dim);font-family:sans-serif;line-height:1.4;
-  transition:background .12s,color .12s;cursor:pointer
-}
+.ch-btn{width:100%;text-align:left;padding:8px 10px;border-radius:6px;font-size:.76rem;color:var(--text-dim);font-family:sans-serif;line-height:1.4;transition:background .12s,color .12s}
 .ch-btn:hover{background:var(--surface2);color:var(--text)}
 .ch-btn.active{background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent)}
 .reader-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.reader-toolbar{
-  padding:8px 16px;border-bottom:1px solid var(--border);background:var(--surface);
-  display:flex;align-items:center;gap:8px;flex-shrink:0;position:relative
-}
+.reader-toolbar{padding:8px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:8px;flex-shrink:0;position:relative}
 .prog-bar{position:absolute;top:0;left:0;right:0;height:2px;background:var(--border)}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .1s}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .1s;width:0}
 .tb-sep{width:1px;height:18px;background:var(--border);margin:0 3px}
-.font-btn{
-  padding:3px 9px;border:1px solid var(--border);border-radius:6px;
-  font-size:.72rem;color:var(--text-dim);font-family:sans-serif;transition:border-color .15s,color .15s
-}
+.font-btn{padding:4px 9px;border:1px solid var(--border);border-radius:6px;font-size:.72rem;color:var(--text-dim);font-family:sans-serif;transition:all .15s}
 .font-btn:hover{border-color:var(--accent);color:var(--accent)}
 .tb-title{flex:1;text-align:center;font-size:.76rem;color:var(--text-dim);font-family:sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 12px}
-.font-sel{
-  background:var(--surface2);border:1px solid var(--border);border-radius:6px;
-  padding:3px 7px;font-size:.72rem;color:var(--text);outline:none;cursor:pointer;font-family:sans-serif
-}
-.reader-scroll{flex:1;overflow-y:auto;position:relative}
-.reader-article{max-width:660px;margin:0 auto;padding:48px 28px 72px}
+.font-sel{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 7px;font-size:.72rem;color:var(--text);outline:none;cursor:pointer;font-family:sans-serif}
+.reader-scroll{flex:1;overflow-y:auto}
+.reader-article{max-width:680px;margin:0 auto;padding:48px 28px 80px}
 .reader-article h1{font-size:1.4rem;font-weight:400;text-align:center;margin-bottom:40px;padding-bottom:20px;border-bottom:1px solid var(--border);line-height:1.4}
-.reader-article p{margin-bottom:1.35em;font-family:var(--rf,'Georgia,serif');font-size:var(--rs,1rem);line-height:1.85;color:var(--text)}
-.reader-article p:first-of-type::first-letter{float:left;font-size:3em;line-height:.8;margin:.05em .1em 0 0;color:var(--gold);font-family:'Georgia',serif}
+.reader-article p{margin-bottom:1.35em;font-family:var(--rf,'Georgia,serif');font-size:var(--rs,17px);line-height:1.85;color:var(--text)}
 .reader-article em{color:var(--text-dim);font-style:italic}
-.reader-article .system-box,.reader-article [style*="0a1420"]{margin:22px 0}
-.sep{text-align:center;color:var(--text-mute);margin:20px 0;letter-spacing:.3em}
 .reader-nav{display:flex;justify-content:space-between;margin-top:56px;padding-top:20px;border-top:1px solid var(--border);gap:10px}
-.reader-nav button{padding:9px 18px;border:1px solid var(--border);border-radius:7px;font-family:'Georgia',serif;font-size:.8rem;color:var(--text-dim);background:var(--surface);transition:border-color .15s,color .15s}
+.reader-nav button{padding:10px 18px;border:1px solid var(--border);border-radius:8px;font-family:'Georgia',serif;font-size:.82rem;color:var(--text-dim);background:var(--surface);transition:all .15s}
 .reader-nav button:hover{border-color:var(--accent);color:var(--accent)}
 .reader-nav button:disabled{opacity:.22;pointer-events:none}
 .reader-nav .nx{background:var(--accent);color:#fff;border-color:var(--accent)}
-.reader-nav .nx:hover{opacity:.85;color:#fff}
-.loading-ch{padding:48px 28px;text-align:center;color:var(--text-mute);font-family:sans-serif;font-size:.85rem}
 
-/* ── ADMIN ── */
-#view-admin{overflow-y:auto}
-.admin-wrap{max-width:720px;margin:0 auto;padding:32px 20px 60px}
-.admin-wrap h2{font-size:1.1rem;font-weight:400;margin-bottom:24px;color:var(--text)}
-.admin-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px}
-.admin-section h3{font-size:.82rem;color:var(--text-dim);font-family:sans-serif;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
-.field{margin-bottom:14px}
-.field label{display:block;font-family:sans-serif;font-size:.74rem;color:var(--text-dim);margin-bottom:5px}
-.field input,.field select{
-  width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);
-  border-radius:7px;color:var(--text);font-family:sans-serif;font-size:.82rem;outline:none
-}
-.field input:focus,.field select:focus{border-color:var(--accent)}
-.field input[type=password]{letter-spacing:.1em}
-.btn-admin{
-  padding:10px 20px;background:var(--accent);color:#fff;border-radius:7px;
-  font-family:sans-serif;font-size:.8rem;transition:opacity .15s;display:inline-flex;align-items:center;gap:6px
-}
-.btn-admin:hover{opacity:.85}
-.btn-admin.danger{background:#ef4444}
+/* ADMIN */
+.admin-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.admin-section h3{font-size:.8rem;color:var(--text-dim);font-family:sans-serif;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
+.admin-section textarea{width:100%;min-height:90px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:sans-serif;font-size:.84rem;outline:none;resize:vertical}
+.admin-section textarea:focus{border-color:var(--accent)}
+.admin-section input,.admin-section select{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:sans-serif;font-size:.84rem;outline:none}
+.admin-section input:focus,.admin-section select:focus{border-color:var(--accent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.genre-pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.btn-admin{padding:10px 20px;background:var(--accent);color:#fff;border-radius:8px;font-family:sans-serif;font-size:.8rem;transition:opacity .15s}
+.btn-admin:hover{opacity:.88}
 .btn-admin.sec{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim)}
-.btn-admin.sec:hover{border-color:var(--accent);color:var(--accent)}
-.file-drop{
-  border:2px dashed var(--border);border-radius:8px;padding:28px;text-align:center;
-  cursor:pointer;transition:border-color .15s,background .15s
-}
+.btn-admin.danger{background:#ef4444}
+.file-drop{border:2px dashed var(--border);border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:all .15s;margin-top:4px}
 .file-drop:hover,.file-drop.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 4%,var(--surface))}
 .file-drop p{font-family:sans-serif;font-size:.78rem;color:var(--text-dim);margin-top:6px}
-.file-list{margin-top:12px;display:flex;flex-direction:column;gap:6px}
-.file-item{
-  display:flex;align-items:center;gap:10px;padding:8px 12px;
-  background:var(--surface2);border-radius:6px;border:1px solid var(--border)
-}
-.file-item .fn{flex:1;font-family:sans-serif;font-size:.76rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.file-item .fs{font-family:sans-serif;font-size:.66rem;color:var(--text-mute);flex-shrink:0}
-.file-item .rm{font-size:.7rem;color:#ef4444;cursor:pointer;padding:2px 6px;border-radius:4px}
-.file-item .rm:hover{background:color-mix(in srgb,#ef4444 12%,transparent)}
-.repo-file-list{margin-top:0;display:flex;flex-direction:column;gap:5px;max-height:300px;overflow-y:auto}
-.repo-file{
-  display:flex;align-items:center;padding:7px 12px;border-radius:6px;
-  background:var(--surface2);border:1px solid var(--border);gap:10px
-}
-.repo-file .rfn{flex:1;font-family:sans-serif;font-size:.75rem;color:var(--text)}
-.repo-file .del-btn{font-size:.68rem;color:#ef4444;cursor:pointer;padding:2px 7px;border-radius:4px;border:1px solid color-mix(in srgb,#ef4444 30%,transparent)}
-.repo-file .del-btn:hover{background:color-mix(in srgb,#ef4444 10%,transparent)}
-.msg{font-family:sans-serif;font-size:.76rem;padding:8px 12px;border-radius:6px;margin-bottom:12px}
-.msg.ok{background:color-mix(in srgb,#4ade80 10%,transparent);color:#4ade80;border:1px solid color-mix(in srgb,#4ade80 25%,transparent)}
-.msg.err{background:color-mix(in srgb,#f87171 10%,transparent);color:#f87171;border:1px solid color-mix(in srgb,#f87171 25%,transparent)}
-.login-box{
-  max-width:360px;margin:60px auto;background:var(--surface);
-  border:1px solid var(--border);border-radius:12px;padding:32px
-}
-.login-box h2{font-size:1rem;font-weight:400;margin-bottom:24px;text-align:center}
-.up-progress{
-  height:5px;background:var(--border);border-radius:3px;margin-top:10px;overflow:hidden;display:none
-}
-.up-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .2s}
+.admin-novels{display:flex;flex-direction:column;gap:8px}
+.adm-novel{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px}
+.adm-novel .t{flex:1;font-family:sans-serif;font-size:.82rem;color:var(--text)}
+.adm-novel .sl{font-family:sans-serif;font-size:.66rem;color:var(--text-mute)}
+.adm-novel button{font-family:sans-serif;font-size:.7rem;padding:4px 10px;border-radius:5px;border:1px solid var(--border);color:var(--text-dim)}
+.adm-novel button:hover{border-color:var(--accent);color:var(--accent)}
+.msg{font-family:sans-serif;font-size:.76rem;padding:9px 12px;border-radius:7px;margin-top:10px;display:none}
+.msg.show{display:block}
+.msg.ok{background:color-mix(in srgb,#4ade80 10%,transparent);color:#4ade80}
+.msg.err{background:color-mix(in srgb,#f87171 10%,transparent);color:#f87171}
+.label{display:block;font-family:sans-serif;font-size:.74rem;color:var(--text-dim);margin-bottom:5px;margin-top:12px}
 
-/* ── MOBILE ── */
-.sb-toggle{display:none}
-.sb-overlay{display:none;position:fixed;inset:0;z-index:89;background:rgba(0,0,0,.5)}
-@media(max-width:680px){
-  :root{--sidebar-w:260px}
-  .sidebar{position:fixed;top:var(--nav-h);left:0;bottom:0;z-index:90;transform:translateX(-100%);transition:transform .25s}
-  .sidebar.open{transform:translateX(0)}
-  .sb-toggle{display:flex}
-  .sb-overlay.active{display:block}
-  .reader-article{padding:32px 16px 60px}
-  .nav-search{max-width:160px}
-}
-
-/* ── TOAST ── */
-.toast{
-  position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);
-  background:var(--surface2);border:1px solid var(--border);border-radius:7px;
-  padding:9px 18px;font-family:sans-serif;font-size:.78rem;color:var(--text);
-  z-index:200;transition:transform .25s,opacity .25s;opacity:0;pointer-events:none;white-space:nowrap
-}
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--surface2);
+border:1px solid var(--border);border-radius:8px;padding:10px 18px;font-family:sans-serif;font-size:.78rem;color:var(--text);
+z-index:300;transition:transform .25s,opacity .25s;opacity:0;pointer-events:none;white-space:nowrap}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* MOBILE */
+.sb-toggle{display:none}
+@media(max-width:760px){
+.nav-links{display:none}
+.nav-search{display:none}
+.novel-hero .nc{width:150px;margin:0 auto}
+.novel-info{min-width:100%}
+.sidebar{position:fixed;top:0;left:0;bottom:0;z-index:90;transform:translateX(-100%);width:260px}
+.sidebar.open{transform:translateX(0)}
+.sb-toggle{display:flex}
+.reader-article{padding:32px 18px 64px}
+.grid2{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <div class="logo" onclick="goHome()">
-    <div class="logo-mark">☯</div>
-    <span class="logo-text">Firma<span>mento</span></span>
-  </div>
-  <input type="search" class="nav-search" id="nav-search" placeholder="Buscar capítulo..." oninput="filterChapters(this.value)">
-  <div class="nav-space"></div>
-  <button class="nav-ic sb-toggle" id="sb-toggle" onclick="toggleSidebar()" style="display:none">☰</button>
-  <button class="nav-ic" onclick="toggleTheme()" title="Tema">◑</button>
-  <button class="nav-ic" onclick="goAdmin()" title="Admin">⚙</button>
-</nav>
-
-<!-- HOME -->
-<div id="view-home" class="view active">
-  <div class="hero">
-    <h1>Cada capítulo,<br><em>ao seu ritmo.</em></h1>
-    <p>Sua biblioteca de novels, organizada e sempre disponível.</p>
-    <div class="hero-btns">
-      <button class="btn-p" onclick="loadNovels()">↻ Atualizar biblioteca</button>
+<!-- LOGIN -->
+<div id="view-login" class="view">
+  <div class="login-card">
+    <div class="brand"><div class="ic">☯</div><div class="tx">Firma<span style="color:var(--accent)">mento</span></div></div>
+    <div class="login-sub">Entre para acessar a biblioteca</div>
+    <div class="login-tabs">
+      <button id="tab-login" class="active" onclick="setAuthMode('login')">Entrar</button>
+      <button id="tab-signup" onclick="setAuthMode('signup')">Criar conta</button>
     </div>
-  </div>
-  <div id="status-area"></div>
-  <div class="section">
-    <div class="sec-head">
-      <h2>Biblioteca</h2>
-      <span class="ct" id="lib-count">—</span>
-    </div>
-    <div class="novels-grid" id="novels-grid">
-      <div class="empty"><div class="ei">📖</div>Carregando novels do GitHub…</div>
-    </div>
+    <div class="field" id="field-name" style="display:none"><label>Nome de usuário</label><input type="text" id="au-name" placeholder="seu apelido"></div>
+    <div class="field"><label>Email</label><input type="email" id="au-email" placeholder="voce@email.com"></div>
+    <div class="field"><label>Senha</label><input type="password" id="au-pass" placeholder="••••••••"></div>
+    <button class="btn-full" id="au-btn" onclick="doAuth()">Entrar</button>
+    <div class="auth-msg" id="auth-msg"></div>
   </div>
 </div>
 
+<!-- NAV -->
+<nav id="nav" style="display:none">
+  <div class="logo" onclick="go('home')"><div class="ic">☯</div><div class="tx">Firma<span>mento</span></div></div>
+  <div class="nav-links">
+    <a onclick="go('home')" data-nav="home">Início</a>
+    <a onclick="go('catalog')" data-nav="catalog">Catálogo</a>
+    <a onclick="go('library')" data-nav="library">Biblioteca</a>
+    <a onclick="go('admin')" data-nav="admin" id="nav-admin" style="display:none">Admin</a>
+  </div>
+  <input class="nav-search" id="nav-search" placeholder="Buscar novel ou autor..." oninput="navSearch(this.value)">
+  <div class="nav-spacer"></div>
+  <button class="nav-ic" onclick="toggleTheme()" title="Tema">◑</button>
+  <div class="user-chip" onclick="toggleMenu(event)">
+    <div class="av" id="u-av">?</div>
+    <div class="nm" id="u-nm">—</div>
+  </div>
+  <div class="menu" id="user-menu">
+    <div class="role" id="u-role">—</div>
+    <button onclick="go('library')">Minha biblioteca</button>
+    <button onclick="go('admin')" id="menu-admin" style="display:none">Painel admin</button>
+    <button onclick="doLogout()">Sair</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div id="view-home" class="view"><div class="wrap" id="home-wrap"></div></div>
+
+<!-- CATALOG -->
+<div id="view-catalog" class="view"><div class="wrap">
+  <div class="sec-head"><h2>Catálogo</h2><span class="ct" id="cat-count"></span></div>
+  <div class="filters">
+    <div class="filter-row"><input class="filter-search" id="cat-search" placeholder="Buscar por nome ou autor..." oninput="renderCatalog()"></div>
+    <div class="filter-row" id="cat-status"><span class="lab">Status</span></div>
+    <div class="filter-row" id="cat-genres"><span class="lab">Gêneros</span></div>
+  </div>
+  <div class="grid" id="cat-grid"></div>
+</div></div>
+
+<!-- LIBRARY -->
+<div id="view-library" class="view"><div class="wrap" id="library-wrap"></div></div>
+
+<!-- NOVEL -->
+<div id="view-novel" class="view"><div class="wrap" id="novel-wrap"></div></div>
+
 <!-- READER -->
 <div id="view-reader" class="view">
-  <div class="sb-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
   <div class="sidebar" id="sidebar">
-    <div class="sb-head">
-      <span class="sb-title" id="sb-title">Capítulos</span>
-      <button class="nav-ic" onclick="goHome()" title="Voltar">←</button>
-    </div>
+    <div class="sb-head"><span class="sb-title" id="sb-title">Capítulos</span><button class="nav-ic" onclick="exitReader()" title="Voltar">←</button></div>
     <div class="sb-list" id="sb-list"></div>
   </div>
   <div class="reader-main">
     <div class="reader-toolbar">
-      <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
       <button class="nav-ic sb-toggle" onclick="toggleSidebar()">☰</button>
       <div class="tb-title" id="tb-title">—</div>
       <button class="font-btn" onclick="adjFs(-1)">A−</button>
-      <button class="font-btn" onclick="adjFs(+1)">A+</button>
+      <button class="font-btn" onclick="adjFs(1)">A+</button>
       <div class="tb-sep"></div>
       <select class="font-sel" onchange="setFont(this.value)">
         <option value="Georgia,serif">Serif</option>
@@ -336,483 +351,566 @@ nav{
 </div>
 
 <!-- ADMIN -->
-<div id="view-admin" class="view">
-  <div id="admin-login-wrap" class="admin-wrap">
-    <div class="login-box">
-      <h2>🔒 Área Administrativa</h2>
-      <div class="field"><label>Senha</label><input type="password" id="admin-pw" placeholder="••••••••" onkeydown="if(e.key==='Enter')adminLogin()"></div>
-      <div id="login-msg"></div>
-      <button class="btn-admin" style="width:100%" onclick="adminLogin()">Entrar</button>
+<div id="view-admin" class="view"><div class="wrap">
+  <div class="sec-head"><h2>Painel administrativo</h2></div>
+
+  <div class="admin-section">
+    <h3>Cadastrar / editar novel</h3>
+    <input type="hidden" id="nf-editing">
+    <div class="grid2">
+      <div><label class="label">Título *</label><input type="text" id="nf-title" placeholder="Nome da novel"></div>
+      <div><label class="label">Autor</label><input type="text" id="nf-author" placeholder="Autor"></div>
     </div>
+    <div class="grid2">
+      <div><label class="label">Slug (identificador, sem espaço)</label><input type="text" id="nf-slug" placeholder="gerado do título se vazio"></div>
+      <div><label class="label">Pasta dos capítulos no GitHub *</label><input type="text" id="nf-folder" placeholder="capitulos"></div>
+    </div>
+    <div class="grid2">
+      <div><label class="label">Status</label><select id="nf-status"><option>Em andamento</option><option>Completo</option><option>Hiato</option><option>Em breve</option></select></div>
+      <div><label class="label">URL da capa</label><input type="text" id="nf-cover" placeholder="https://..."></div>
+    </div>
+    <label class="label">Descrição</label>
+    <textarea id="nf-desc" placeholder="Sinopse da novel..."></textarea>
+    <label class="label">Gêneros</label>
+    <div class="genre-pick" id="nf-genres"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn-admin" onclick="saveNovel()">💾 Salvar novel</button>
+      <button class="btn-admin sec" onclick="clearNovelForm()">Limpar</button>
+    </div>
+    <div class="msg" id="nf-msg"></div>
   </div>
-  <div id="admin-panel" class="admin-wrap" style="display:none">
-    <h2>⚙ Administração</h2>
 
-    <div class="admin-section">
-      <h3>Configuração do GitHub</h3>
-      <div class="field"><label>Usuário / Organização</label><input type="text" id="gh-owner" placeholder="seu-usuario"></div>
-      <div class="field"><label>Nome do Repositório</label><input type="text" id="gh-repo" placeholder="firmamento"></div>
-      <div class="field"><label>Personal Access Token (com permissão <code>repo</code>)</label><input type="password" id="gh-token" placeholder="ghp_..."></div>
-      <div class="field"><label>Pasta dos capítulos no repositório</label><input type="text" id="gh-folder" value="capitulos" placeholder="capitulos"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn-admin" onclick="saveGhConfig()">💾 Salvar configuração</button>
-        <button class="btn-admin sec" onclick="testGhConfig()">🔍 Testar conexão</button>
-      </div>
-      <div id="gh-msg" style="margin-top:10px"></div>
-    </div>
-
-    <div class="admin-section">
-      <h3>Enviar capítulos para o GitHub</h3>
-      <div class="file-drop" id="file-drop" onclick="document.getElementById('file-input').click()">
-        <div style="font-size:2rem">📂</div>
-        <p>Clique ou arraste arquivos HTML aqui</p>
-        <p style="font-size:.68rem;margin-top:4px;color:var(--text-mute)">Múltiplos arquivos aceitos</p>
-      </div>
-      <input type="file" id="file-input" multiple accept=".html" style="display:none" onchange="addFiles(this.files)">
-      <div class="file-list" id="file-list"></div>
-      <div class="up-progress" id="up-progress"><div class="up-progress-fill" id="up-prog-fill" style="width:0%"></div></div>
-      <div id="up-msg" style="margin-top:10px"></div>
-      <button class="btn-admin" style="margin-top:12px" onclick="uploadFiles()">⬆ Enviar para o GitHub</button>
-    </div>
-
-    <div class="admin-section">
-      <h3>Arquivos no repositório</h3>
-      <button class="btn-admin sec" onclick="listRepoFiles()" style="margin-bottom:12px">↻ Atualizar lista</button>
-      <div class="repo-file-list" id="repo-file-list"><div style="color:var(--text-mute);font-family:sans-serif;font-size:.75rem">Clique em "Atualizar lista" para ver os arquivos.</div></div>
-    </div>
-
-    <div class="admin-section">
-      <h3>Senha do admin</h3>
-      <div class="field"><label>Nova senha</label><input type="password" id="new-pw" placeholder="••••••••"></div>
-      <div class="field"><label>Confirmar nova senha</label><input type="password" id="new-pw2" placeholder="••••••••"></div>
-      <button class="btn-admin" onclick="changePassword()">🔑 Alterar senha</button>
-      <div id="pw-msg" style="margin-top:10px"></div>
-    </div>
-
-    <button class="btn-admin danger" onclick="adminLogout()">Sair</button>
+  <div class="admin-section">
+    <h3>Novels cadastradas</h3>
+    <div class="admin-novels" id="adm-novels"></div>
   </div>
-</div>
+
+  <div class="admin-section">
+    <h3>Enviar capítulos (HTML) para o GitHub</h3>
+    <label class="label">Token do GitHub (precisa de permissão de escrita; fica salvo só neste aparelho)</label>
+    <input type="password" id="gh-token" placeholder="ghp_... ou github_pat_...">
+    <label class="label">Pasta de destino</label>
+    <input type="text" id="up-folder" placeholder="capitulos">
+    <div class="file-drop" id="file-drop" onclick="document.getElementById('file-input').click()">
+      <div style="font-size:1.8rem">📂</div>
+      <p>Clique ou arraste arquivos HTML aqui</p>
+    </div>
+    <input type="file" id="file-input" multiple accept=".html" style="display:none" onchange="addFiles(this.files)">
+    <div id="up-list" style="margin-top:10px"></div>
+    <button class="btn-admin" style="margin-top:12px" onclick="uploadFiles()">⬆ Enviar para o GitHub</button>
+    <div class="msg" id="up-msg"></div>
+  </div>
+</div></div>
 
 <div class="toast" id="toast"></div>
 
 <script>
 /* ═══ CONFIG ═══ */
-const DEFAULT_PW_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // "admin"
-let novels = {};
-let cur = {slug:null, idx:0};
+const SUPA_URL = 'https://lpsynluplxgzagsgbauj.supabase.co';
+const SUPA_KEY = 'sb_publishable_inDX8SLLcIW-yhiz1ZkOWw_kbIBJPZl';
+const GH_OWNER = 'kauangomesgusmao';
+const GH_REPO  = 'Firmamento';
+const GENRES = ['Ação','Aventura','Fantasia','Artes Marciais','Romance','Comédia','Drama','Isekai','Xianxia','Xuanhuan','Wuxia','Sistema','Harém','Ecchi','Terror','Mistério','Sci-Fi','Slice of Life','Tragédia','Sobrenatural','Histórico','Psicológico'];
+const STATUSES = ['Em andamento','Completo','Hiato','Em breve'];
+
+const sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let ME = null;          // auth user
+let PROFILE = null;     // {role, username}
+let NOVELS = [];        // novels metadata from supabase
+let CHAP_CACHE = {};    // slug -> [{name,content,order}]
+let FAVS = new Set();   // favorite slugs
+let authMode = 'login';
 let fs = +localStorage.getItem('fs') || 17;
 let font = localStorage.getItem('font') || 'Georgia,serif';
+let cur = {slug:null, idx:0};
 let pendingFiles = [];
-let adminAuthed = false;
 
 /* ═══ THEME ═══ */
-(()=>{
-  const t = localStorage.getItem('theme') || 'dark';
-  if(t==='light') document.documentElement.setAttribute('data-theme','light');
-})();
+(()=>{ if((localStorage.getItem('theme')||'dark')==='light') document.documentElement.setAttribute('data-theme','light'); })();
 function toggleTheme(){
-  const l = document.documentElement.getAttribute('data-theme')==='light';
-  if(l) document.documentElement.removeAttribute('data-theme');
-  else document.documentElement.setAttribute('data-theme','light');
-  localStorage.setItem('theme', l?'dark':'light');
+  const l=document.documentElement.getAttribute('data-theme')==='light';
+  if(l) document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme','light');
+  localStorage.setItem('theme',l?'dark':'light');
 }
 
-/* ═══ VIEWS ═══ */
-function showView(id){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-'+id).classList.add('active');
-  document.getElementById('nav-search').style.display = id==='reader'?'block':'none';
-  document.getElementById('sb-toggle').style.display = id==='reader'?'flex':'none';
+/* ═══ AUTH ═══ */
+function setAuthMode(m){
+  authMode=m;
+  document.getElementById('tab-login').classList.toggle('active',m==='login');
+  document.getElementById('tab-signup').classList.toggle('active',m==='signup');
+  document.getElementById('field-name').style.display = m==='signup'?'block':'none';
+  document.getElementById('au-btn').textContent = m==='signup'?'Criar conta':'Entrar';
+  authMsg('','');
 }
-function goHome(){ showView('home'); loadNovels(); }
-function goAdmin(){ showView('admin'); }
-
-/* ═══ GITHUB CONFIG ═══ */
-function getGhConfig(){
-  return {
-    owner: localStorage.getItem('gh_owner')||'kauangomesgusmao',
-    repo:  localStorage.getItem('gh_repo')||'Firmamento',
-    token: localStorage.getItem('gh_token')||'',
-    folder:localStorage.getItem('gh_folder')||'capitulos'
-  };
+function authMsg(type,txt){
+  const el=document.getElementById('auth-msg');
+  el.className='auth-msg'+(txt?' show '+type:''); el.textContent=txt;
 }
-function saveGhConfig(){
-  const o=document.getElementById('gh-owner').value.trim();
-  const r=document.getElementById('gh-repo').value.trim();
-  const t=document.getElementById('gh-token').value.trim();
-  const f=document.getElementById('gh-folder').value.trim()||'capitulos';
-  if(!o||!r||!t){showMsg('gh-msg','err','Preencha usuário, repositório e token.'); return;}
-  localStorage.setItem('gh_owner',o);
-  localStorage.setItem('gh_repo',r);
-  localStorage.setItem('gh_token',t);
-  localStorage.setItem('gh_folder',f);
-  showMsg('gh-msg','ok','Configuração salva.');
-}
-async function testGhConfig(){
-  const {owner,repo,token} = getGhConfig();
-  if(!owner||!repo||!token){showMsg('gh-msg','err','Configure os dados primeiro.'); return;}
-  showMsg('gh-msg','ok','Testando…');
+async function doAuth(){
+  const email=document.getElementById('au-email').value.trim();
+  const pass=document.getElementById('au-pass').value;
+  const btn=document.getElementById('au-btn');
+  if(!email||!pass){authMsg('err','Preencha email e senha.');return;}
+  btn.disabled=true;
   try{
-    const r = await ghApi(`/repos/${owner}/${repo}`);
-    showMsg('gh-msg','ok',`Conectado: ${r.full_name} (${r.private?'privado':'público'})`);
-  } catch(e){ showMsg('gh-msg','err','Erro: '+e.message); }
-}
-
-/* ═══ GITHUB API ═══ */
-async function ghApi(path, method='GET', body=null){
-  const {token} = getGhConfig();
-  const opts = {
-    method,
-    headers:(token?{'Authorization':'token '+token,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'}:{'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'})
-  };
-  if(body) opts.body = JSON.stringify(body);
-  const r = await fetch('https://api.github.com'+path, opts);
-  if(!r.ok){
-    const e = await r.json().catch(()=>({message:r.statusText}));
-    throw new Error(e.message||r.statusText);
-  }
-  return r.json();
-}
-
-/* ═══ LOAD NOVELS ═══ */
-async function loadNovels(){
-  const {owner,repo,token,folder} = getGhConfig();
-  const grid = document.getElementById('novels-grid');
-  const sa = document.getElementById('status-area');
-
-  if(!owner||!repo){
-    sa.innerHTML = `<div class="status-banner err" style="margin:0 20px 16px">⚠ Configure o repositório GitHub na área de admin antes de usar.</div>`;
-    grid.innerHTML = `<div class="empty"><div class="ei">⚙</div>Configure o GitHub no admin primeiro.</div>`;
-    document.getElementById('lib-count').textContent = '—';
-    return;
-  }
-
-  grid.innerHTML = `<div class="empty"><div class="ei">⏳</div>Carregando do GitHub…</div>`;
-  sa.innerHTML = '';
-
-  try{
-    // listar arquivos na pasta de capítulos
-    const files = await ghApi(`/repos/${owner}/${repo}/contents/${folder}`);
-    const htmlFiles = files.filter(f=>f.name.endsWith('.html')).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
-
-    if(!htmlFiles.length){
-      grid.innerHTML = `<div class="empty"><div class="ei">📂</div>Nenhum HTML encontrado na pasta <code>${folder}</code>.</div>`;
-      document.getElementById('lib-count').textContent = '0 novels';
-      return;
+    if(authMode==='signup'){
+      const name=document.getElementById('au-name').value.trim();
+      const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{username:name}}});
+      if(error) throw error;
+      if(name && data.user){ await sb.from('profiles').update({username:name}).eq('id',data.user.id).then(()=>{}); }
+      if(!data.session){ authMsg('ok','Conta criada! Se pedir, confirme pelo email e depois entre.'); setAuthMode('login'); btn.disabled=false; return; }
+    } else {
+      const {error}=await sb.auth.signInWithPassword({email,password:pass});
+      if(error) throw error;
     }
+  }catch(e){ authMsg('err', traduzErro(e.message)); btn.disabled=false; }
+}
+function traduzErro(m){
+  if(/Invalid login/i.test(m)) return 'Email ou senha incorretos.';
+  if(/already registered/i.test(m)) return 'Esse email já tem conta.';
+  if(/at least 6/i.test(m)) return 'A senha precisa de pelo menos 6 caracteres.';
+  if(/Email not confirmed/i.test(m)) return 'Confirme seu email antes de entrar.';
+  return m;
+}
+async function doLogout(){ await sb.auth.signOut(); location.hash=''; location.reload(); }
 
-    // agrupar por título de novel (detectado no <title> do HTML)
-    const novelMap = {};
-    const promises = htmlFiles.map(async f=>{
-      try{
-        const raw = await fetch(f.download_url);
-        const html = await raw.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html,'text/html');
-        // detectar título da novel (remove range de caps do título)
-        const rawTitle = doc.title?.trim() || f.name.replace(/\.[^.]+$/,'');
-        const novelTitle = rawTitle.replace(/\s*[—\-–_]\s*(caps?|cap[ií]tulos?|ch|chapters?|vol\.?|volume)?\s*[\d\s–\-–]+$/i,'').trim() || 'Novel';
-        const slug = novelTitle.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-
-        // detectar capítulos
-        const caps = splitChapters(doc, f.name);
-
-        if(!novelMap[slug]) novelMap[slug]={title:novelTitle, chapters:[], slug};
-        caps.forEach(c=>novelMap[slug].chapters.push(c));
-      } catch(e){ console.warn('Erro ao processar',f.name,e); }
-    });
-    await Promise.all(promises);
-
-    // ordenar capítulos por data-cap
-    Object.values(novelMap).forEach(n=>{
-      n.chapters.sort((a,b)=>(a.order||0)-(b.order||0));
-    });
-
-    novels = {};
-    Object.values(novelMap).forEach(n=>{ novels[n.slug]=n; });
-
-    renderLibrary();
-    document.getElementById('lib-count').textContent = Object.keys(novels).length + (Object.keys(novels).length===1?' novel':' novels');
-
-  } catch(e){
-    grid.innerHTML = `<div class="empty"><div class="ei">⚠</div>Erro ao carregar: ${e.message}</div>`;
-    sa.innerHTML = `<div class="status-banner err" style="margin:0 20px 16px">Erro ao conectar ao GitHub: ${e.message}</div>`;
-  }
+async function loadProfile(){
+  const {data}=await sb.from('profiles').select('*').eq('id',ME.id).maybeSingle();
+  PROFILE=data||{role:'user',username:ME.email};
+}
+async function loadFavs(){
+  const {data}=await sb.from('favorites').select('novel_slug').eq('user_id',ME.id);
+  FAVS=new Set((data||[]).map(f=>f.novel_slug));
 }
 
+/* boot auth gate */
+async function boot(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){ await enterApp(session.user); }
+  else { showOnlyLogin(); }
+  sb.auth.onAuthStateChange(async (_e,s)=>{
+    if(s && (!ME || ME.id!==s.user.id)){ await enterApp(s.user); }
+    else if(!s && ME){ ME=null; showOnlyLogin(); }
+  });
+}
+function showOnlyLogin(){
+  document.getElementById('nav').style.display='none';
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-login').classList.add('active');
+}
+async function enterApp(user){
+  ME=user;
+  await loadProfile();
+  await loadFavs();
+  const isAdmin=PROFILE.role==='admin';
+  document.getElementById('nav').style.display='flex';
+  document.getElementById('nav-admin').style.display=isAdmin?'block':'none';
+  document.getElementById('menu-admin').style.display=isAdmin?'block':'none';
+  const uname=PROFILE.username||user.email;
+  document.getElementById('u-nm').textContent=uname;
+  document.getElementById('u-av').textContent=(uname[0]||'?').toUpperCase();
+  document.getElementById('u-role').textContent=isAdmin?'Administrador':'Leitor';
+  document.getElementById('view-login').classList.remove('active');
+  await loadNovels();
+  route();
+}
+
+/* ═══ NOVELS DATA ═══ */
+async function loadNovels(){
+  const {data,error}=await sb.from('novels').select('*').order('updated_at',{ascending:false});
+  NOVELS = error?[]:(data||[]);
+}
+function novelBySlug(slug){ return NOVELS.find(n=>n.slug===slug); }
+
+/* ═══ GITHUB CHAPTERS (public, token-free read) ═══ */
+async function ghList(folder){
+  const r=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(folder)}`);
+  if(!r.ok) return [];
+  const files=await r.json();
+  return (Array.isArray(files)?files:[]).filter(f=>f.name.endsWith('.html')).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+}
 function splitChapters(doc, fallback){
-  const body = doc.body||doc.documentElement;
-  const dataCaps = Array.from(body.querySelectorAll('article[data-cap],section[data-cap]'));
+  const body=doc.body||doc.documentElement;
+  const dataCaps=Array.from(body.querySelectorAll('article[data-cap],section[data-cap]'));
   if(dataCaps.length){
     return dataCaps.sort((a,b)=>(+a.dataset.cap)-(+b.dataset.cap)).map(el=>{
-      const name = el.dataset.title||el.querySelector('h1,h2,h3')?.textContent.trim()||`Capítulo ${el.dataset.cap}`;
-      const clone = el.cloneNode(true);
-      clone.querySelector('h1,h2,h3')?.remove();
+      const name=el.dataset.title||el.querySelector('h1,h2,h3')?.textContent.trim()||`Capítulo ${el.dataset.cap}`;
+      const clone=el.cloneNode(true); clone.querySelector('h1,h2,h3')?.remove();
       return {name, content:clone.innerHTML, order:+el.dataset.cap};
     });
   }
-  const title = doc.querySelector('h1,h2')?.textContent.trim()||doc.title?.trim()||fallback;
+  const title=doc.querySelector('h1,h2')?.textContent.trim()||doc.title?.trim()||fallback;
   return [{name:title, content:body.innerHTML, order:0}];
 }
-
-/* ═══ LIBRARY ═══ */
-function renderLibrary(){
-  const grid = document.getElementById('novels-grid');
-  const slugs = Object.keys(novels);
-  if(!slugs.length){
-    grid.innerHTML = `<div class="empty"><div class="ei">📖</div>Nenhuma novel encontrada.</div>`;
-    return;
-  }
-  grid.innerHTML = slugs.map(slug=>{
-    const n = novels[slug];
-    const ch = n.chapters.length;
-    return `<div class="novel-card" onclick="openNovel('${slug}',0)">
-      <div class="novel-cover">
-        <div class="cover-placeholder">
-          <div class="ci">📜</div>
-          <div class="ct2">${n.title}</div>
-        </div>
-        <div class="ch-badge">${ch} cap.</div>
-      </div>
-      <h4>${n.title}</h4>
-      <div class="nm">${ch} capítulo${ch!==1?'s':''}</div>
-    </div>`;
-  }).join('');
+async function loadChapters(slug){
+  if(CHAP_CACHE[slug]) return CHAP_CACHE[slug];
+  const n=novelBySlug(slug); if(!n||!n.gh_folder) return [];
+  const files=await ghList(n.gh_folder);
+  const all=[];
+  await Promise.all(files.map(async f=>{
+    try{
+      const html=await fetch(f.download_url).then(r=>r.text());
+      const doc=new DOMParser().parseFromString(html,'text/html');
+      splitChapters(doc,f.name).forEach(c=>all.push(c));
+    }catch(e){ console.warn(f.name,e); }
+  }));
+  all.sort((a,b)=>(a.order||0)-(b.order||0));
+  CHAP_CACHE[slug]=all;
+  return all;
 }
+
+/* ═══ ROUTER ═══ */
+function go(view, arg){
+  if(view==='home') location.hash='#/';
+  else if(view==='catalog') location.hash='#/catalogo';
+  else if(view==='library') location.hash='#/biblioteca';
+  else if(view==='admin') location.hash='#/admin';
+  else if(view==='novel') location.hash='#/novel/'+arg;
+}
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  document.querySelectorAll('[data-nav]').forEach(a=>a.classList.toggle('active',a.dataset.nav===id));
+  if(id!=='reader') window.scrollTo(0,0);
+}
+async function route(){
+  if(!ME){ showOnlyLogin(); return; }
+  const h=location.hash.replace(/^#\/?/,'');
+  const parts=h.split('/').filter(Boolean);
+  const p0=parts[0]||'';
+  if(p0==='catalogo'){ showView('catalog'); renderCatalogFilters(); renderCatalog(); }
+  else if(p0==='biblioteca'){ showView('library'); renderLibrary(); }
+  else if(p0==='admin'){ if(PROFILE.role!=='admin'){go('home');return;} showView('admin'); renderAdmin(); }
+  else if(p0==='novel' && parts[1]){ showView('novel'); renderNovel(decodeURIComponent(parts[1])); }
+  else if(p0==='ler' && parts[1]){ openReader(decodeURIComponent(parts[1]), +parts[2]||0); }
+  else { showView('home'); renderHome(); }
+}
+window.addEventListener('hashchange',route);
+
+/* ═══ CARD HTML ═══ */
+function coverHtml(n){
+  if(n.cover_url) return `<img src="${n.cover_url}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="i">📜</div><div class="t">${esc(n.title)}</div></div>`;
+  return `<div class="ph"><div class="i">📜</div><div class="t">${esc(n.title)}</div></div>`;
+}
+function cardHtml(n, sub){
+  return `<div class="card" onclick="go('novel','${n.slug}')">
+    <div class="cover">${coverHtml(n)}${n.status?`<span class="badge st">${esc(n.status)}</span>`:''}</div>
+    <h4>${esc(n.title)}</h4>
+    <div class="meta">${sub||esc(n.author||'')}</div>
+  </div>`;
+}
+
+/* ═══ HOME ═══ */
+async function renderHome(){
+  const w=document.getElementById('home-wrap');
+  w.innerHTML=`<div class="loading">Carregando…</div>`;
+  // reading history
+  const {data:hist}=await sb.from('reading_history').select('*').eq('user_id',ME.id).order('updated_at',{ascending:false}).limit(12);
+  let html='';
+  if(hist&&hist.length){
+    html+=`<div class="section"><div class="sec-head"><h2>Continuar lendo</h2></div><div class="hscroll">`+
+      hist.map(h=>{const n=novelBySlug(h.novel_slug); if(!n)return''; return `<div class="card" onclick="go('novel','${n.slug}')">
+        <div class="cover">${coverHtml(n)}</div><h4>${esc(n.title)}</h4>
+        <div class="meta"><span class="cont">▸ ${esc(h.chapter_name||('Cap. '+(h.chapter_index+1)))}</span></div></div>`;}).join('')+
+      `</div></div>`;
+  }
+  // all novels
+  html+=`<div class="section"><div class="sec-head"><h2>Biblioteca</h2><a class="more" onclick="go('catalog')">Ver tudo →</a></div>`;
+  if(!NOVELS.length) html+=`<div class="empty"><div class="i">📖</div>Nenhuma novel cadastrada ainda.${PROFILE.role==='admin'?' Vá em Admin para adicionar.':''}</div>`;
+  else html+=`<div class="grid">`+NOVELS.slice(0,12).map(n=>cardHtml(n)).join('')+`</div>`;
+  html+=`</div>`;
+  w.innerHTML=html;
+}
+
+/* ═══ CATALOG ═══ */
+let catStatus=new Set(), catGenres=new Set();
+function renderCatalogFilters(){
+  const st=document.getElementById('cat-status');
+  st.innerHTML='<span class="lab">Status</span>'+STATUSES.map(s=>`<button class="chip${catStatus.has(s)?' on':''}" onclick="toggleFilter('status','${s}')">${s}</button>`).join('');
+  const usedGenres=[...new Set(NOVELS.flatMap(n=>n.genres||[]))];
+  const list=usedGenres.length?usedGenres:GENRES;
+  const g=document.getElementById('cat-genres');
+  g.innerHTML='<span class="lab">Gêneros</span>'+list.map(x=>`<button class="chip${catGenres.has(x)?' on':''}" onclick="toggleFilter('genre','${x.replace(/'/g,"\\'")}')">${x}</button>`).join('');
+}
+function toggleFilter(kind,val){
+  const set=kind==='status'?catStatus:catGenres;
+  if(set.has(val)) set.delete(val); else set.add(val);
+  renderCatalogFilters(); renderCatalog();
+}
+function renderCatalog(){
+  const q=(document.getElementById('cat-search').value||'').toLowerCase();
+  let list=NOVELS.filter(n=>{
+    if(q && !(n.title.toLowerCase().includes(q)||(n.author||'').toLowerCase().includes(q))) return false;
+    if(catStatus.size && !catStatus.has(n.status)) return false;
+    if(catGenres.size && !(n.genres||[]).some(g=>catGenres.has(g))) return false;
+    return true;
+  });
+  document.getElementById('cat-count').textContent=list.length+(list.length===1?' novel':' novels');
+  const grid=document.getElementById('cat-grid');
+  grid.innerHTML = list.length?list.map(n=>cardHtml(n)).join(''):`<div class="empty"><div class="i">🔍</div>Nenhuma novel com esses filtros.</div>`;
+}
+function navSearch(v){ go('catalog'); setTimeout(()=>{const i=document.getElementById('cat-search'); if(i){i.value=v; renderCatalog();}},50); }
+
+/* ═══ LIBRARY (favorites) ═══ */
+async function renderLibrary(){
+  const w=document.getElementById('library-wrap');
+  await loadFavs();
+  const favNovels=NOVELS.filter(n=>FAVS.has(n.slug));
+  let html=`<div class="section"><div class="sec-head"><h2>Meus favoritos</h2><span class="ct">${favNovels.length}</span></div>`;
+  html += favNovels.length?`<div class="grid">`+favNovels.map(n=>cardHtml(n)).join('')+`</div>`:`<div class="empty"><div class="i">⭐</div>Você ainda não favoritou nenhuma novel.</div>`;
+  html+=`</div>`;
+  w.innerHTML=html;
+}
+
+/* ═══ NOVEL DETAIL ═══ */
+async function renderNovel(slug){
+  const w=document.getElementById('novel-wrap');
+  const n=novelBySlug(slug);
+  if(!n){ w.innerHTML=`<div class="empty"><div class="i">❓</div>Novel não encontrada.</div>`; return; }
+  const isFav=FAVS.has(slug);
+  // ratings
+  const {data:rates}=await sb.from('ratings').select('stars,user_id').eq('novel_slug',slug);
+  const avg=rates&&rates.length?(rates.reduce((a,b)=>a+b.stars,0)/rates.length):0;
+  const myRate=(rates||[]).find(r=>r.user_id===ME.id)?.stars||0;
+  w.innerHTML=`
+  <div class="novel-hero">
+    <div class="nc">${n.cover_url?`<img src="${n.cover_url}" onerror="this.parentNode.innerHTML='<div class=ph>📜</div>'">`:'<div class="ph">📜</div>'}</div>
+    <div class="novel-info">
+      <h1>${esc(n.title)}</h1>
+      <div class="tags">${(n.genres||[]).map(g=>`<span class="tag">${esc(g)}</span>`).join('')}</div>
+      ${n.status?`<div class="ninfo-row">Status: <b>${esc(n.status)}</b></div>`:''}
+      ${n.author?`<div class="ninfo-row">Autor: <b>${esc(n.author)}</b></div>`:''}
+      <div class="ninfo-row">Avaliação:
+        <span class="stars" id="stars">${[1,2,3,4,5].map(i=>`<span class="s${i<=Math.round(myRate||avg)?' on':''}" onclick="rate('${slug}',${i})">★</span>`).join('')}</span>
+        <span class="rate-ct">${avg?avg.toFixed(1):'—'}${rates&&rates.length?` (${rates.length})`:''}</span>
+      </div>
+      <div class="novel-actions">
+        <button class="btn-p" onclick="startReading('${slug}')">Começar a ler</button>
+        <button class="btn-s${isFav?' on':''}" id="fav-btn" onclick="toggleFav('${slug}')">${isFav?'★ Favoritado':'☆ Favoritar'}</button>
+      </div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="active" id="tabb-info" onclick="novelTab('info')">Informações</button>
+    <button id="tabb-chaps" onclick="novelTab('chaps')">Capítulos</button>
+  </div>
+  <div class="tab-pane active" id="tab-info"><div class="desc">${esc(n.description||'Sem descrição.')}</div></div>
+  <div class="tab-pane" id="tab-chaps"><div class="loading">Carregando capítulos…</div></div>
+  <div class="comments" id="comments"></div>`;
+  loadComments(slug);
+  // preload chapters for count
+  loadChapters(slug).then(chs=>{
+    const pane=document.getElementById('tab-chaps');
+    if(!pane) return;
+    pane.innerHTML = chs.length?`<div class="chap-list">`+chs.map((c,i)=>`<div class="ch-row" onclick="openReaderHash('${slug}',${i})"><span class="n">${i+1}</span><span class="t">${esc(c.name)}</span></div>`).join('')+`</div>`:`<div class="empty"><div class="i">📂</div>Nenhum capítulo nesta pasta ainda.</div>`;
+  });
+}
+function novelTab(t){
+  document.getElementById('tabb-info').classList.toggle('active',t==='info');
+  document.getElementById('tabb-chaps').classList.toggle('active',t==='chaps');
+  document.getElementById('tab-info').classList.toggle('active',t==='info');
+  document.getElementById('tab-chaps').classList.toggle('active',t==='chaps');
+}
+async function toggleFav(slug){
+  if(FAVS.has(slug)){ await sb.from('favorites').delete().eq('user_id',ME.id).eq('novel_slug',slug); FAVS.delete(slug); }
+  else { await sb.from('favorites').insert({user_id:ME.id,novel_slug:slug}); FAVS.add(slug); }
+  const b=document.getElementById('fav-btn');
+  if(b){ const on=FAVS.has(slug); b.className='btn-s'+(on?' on':''); b.textContent=on?'★ Favoritado':'☆ Favoritar'; }
+}
+async function rate(slug,stars){
+  await sb.from('ratings').upsert({user_id:ME.id,novel_slug:slug,stars},{onConflict:'user_id,novel_slug'});
+  toast('Avaliação salva'); renderNovel(slug);
+}
+async function startReading(slug){
+  // resume last chapter if exists
+  const {data}=await sb.from('reading_history').select('chapter_index').eq('user_id',ME.id).eq('novel_slug',slug).maybeSingle();
+  openReaderHash(slug, data?data.chapter_index:0);
+}
+function openReaderHash(slug,idx){ location.hash='#/ler/'+slug+'/'+idx; }
+
+/* ═══ COMMENTS ═══ */
+async function loadComments(slug){
+  const el=document.getElementById('comments'); if(!el) return;
+  const {data}=await sb.from('comments').select('*').eq('novel_slug',slug).order('created_at',{ascending:false});
+  const list=data||[];
+  el.innerHTML=`<div class="sec-head"><h2>Comentários</h2><span class="ct">${list.length}</span></div>
+    <div class="cmt-box"><textarea id="cmt-input" placeholder="Escreva um comentário..."></textarea>
+    <div style="text-align:right;margin-top:8px"><button class="btn-admin" onclick="postComment('${slug}')">Comentar</button></div></div>
+    <div id="cmt-list">`+ (list.length?list.map(c=>cmtHtml(c)).join(''):`<div style="color:var(--text-mute);font-family:sans-serif;font-size:.8rem;padding:10px">Seja o primeiro a comentar.</div>`) +`</div>`;
+}
+function cmtHtml(c){
+  const mine=c.user_id===ME.id;
+  const when=new Date(c.created_at).toLocaleDateString('pt-BR');
+  return `<div class="cmt"><div class="head"><div class="av">${(c.username||'?')[0]?.toUpperCase()||'?'}</div>
+    <span class="nm">${esc(c.username||'Leitor')}</span><span class="dt">${when}</span>
+    ${mine?`<span class="del" onclick="delComment(${c.id},'${c.novel_slug}')">remover</span>`:''}</div>
+    <div class="body">${esc(c.body)}</div></div>`;
+}
+async function postComment(slug){
+  const inp=document.getElementById('cmt-input'); const body=inp.value.trim(); if(!body) return;
+  await sb.from('comments').insert({user_id:ME.id,novel_slug:slug,body,username:PROFILE.username||ME.email});
+  inp.value=''; loadComments(slug);
+}
+async function delComment(id,slug){ await sb.from('comments').delete().eq('id',id); loadComments(slug); }
 
 /* ═══ READER ═══ */
-function openNovel(slug, idx){
-  cur.slug=slug; cur.idx=idx;
-  const n = novels[slug];
-  document.getElementById('sb-title').textContent = n.title;
-  renderSidebar(n);
-  renderChapter();
+async function openReader(slug,idx){
+  cur={slug,idx};
   showView('reader');
+  document.getElementById('reader-article').innerHTML=`<div class="loading">Carregando…</div>`;
+  const n=novelBySlug(slug);
+  document.getElementById('sb-title').textContent=n?n.title:'Capítulos';
+  const chs=await loadChapters(slug);
+  if(!chs.length){ document.getElementById('reader-article').innerHTML=`<div class="empty"><div class="i">📂</div>Sem capítulos.</div>`; return; }
+  cur.idx=Math.max(0,Math.min(idx,chs.length-1));
+  renderSidebar(chs); renderChapter(chs);
 }
-function renderSidebar(n){
-  document.getElementById('sb-list').innerHTML = n.chapters.map((c,i)=>
-    `<button class="ch-btn ${i===cur.idx?'active':''}" onclick="goChapter(${i})">${c.name}</button>`
-  ).join('');
+function renderSidebar(chs){
+  document.getElementById('sb-list').innerHTML=chs.map((c,i)=>`<button class="ch-btn${i===cur.idx?' active':''}" onclick="goChapter(${i})">${esc(c.name)}</button>`).join('');
 }
-function goChapter(idx){
-  cur.idx=idx;
-  renderChapter();
-  document.querySelectorAll('.ch-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
-  document.getElementById('reader-scroll').scrollTop=0;
-  closeSidebar();
-}
-function renderChapter(){
-  const n = novels[cur.slug];
-  const ch = n.chapters[cur.idx];
-  const art = document.getElementById('reader-article');
-  art.style.setProperty('--rs', fs+'px');
-  art.style.setProperty('--rf', font);
-  const prev = cur.idx>0;
-  const next = cur.idx<n.chapters.length-1;
-  art.innerHTML = `
-    <h1>${ch.name}</h1>
-    <div>${ch.content}</div>
+function renderChapter(chs){
+  const ch=chs[cur.idx];
+  const art=document.getElementById('reader-article');
+  art.style.setProperty('--rs',fs+'px'); art.style.setProperty('--rf',font);
+  const prev=cur.idx>0, next=cur.idx<chs.length-1;
+  art.innerHTML=`<h1>${esc(ch.name)}</h1><div>${ch.content}</div>
     <div class="reader-nav">
       <button onclick="goChapter(${cur.idx-1})" ${prev?'':'disabled'}>← Anterior</button>
       <button class="nx" onclick="goChapter(${cur.idx+1})" ${next?'':'disabled'}>Próximo →</button>
     </div>`;
-  document.getElementById('tb-title').textContent = ch.name;
+  document.getElementById('tb-title').textContent=ch.name;
+  document.getElementById('reader-scroll').scrollTop=0;
   updateProg();
-  // salvar progresso
-  const prog = JSON.parse(localStorage.getItem('progress')||'{}');
-  prog[cur.slug] = cur.idx;
-  localStorage.setItem('progress', JSON.stringify(prog));
+  saveHistory(ch);
 }
-
-function filterChapters(q){
-  if(!cur.slug) return;
-  const n = novels[cur.slug];
-  if(!n) return;
-  document.querySelectorAll('.ch-btn').forEach((b,i)=>{
-    b.style.display = !q || n.chapters[i].name.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
-  });
+function goChapter(i){
+  const chs=CHAP_CACHE[cur.slug]; if(!chs||i<0||i>=chs.length) return;
+  cur.idx=i; renderChapter(chs);
+  document.querySelectorAll('.ch-btn').forEach((b,n)=>b.classList.toggle('active',n===i));
+  closeSidebar();
+  history.replaceState(null,'','#/ler/'+cur.slug+'/'+i);
 }
-
-function adjFs(d){ fs=Math.max(13,Math.min(26,fs+d)); localStorage.setItem('fs',fs); const a=document.getElementById('reader-article'); if(a) a.style.setProperty('--rs',fs+'px'); }
-function setFont(f){ font=f; localStorage.setItem('font',f); const a=document.getElementById('reader-article'); if(a) a.style.setProperty('--rf',f); const s=document.querySelector('.font-sel'); Array.from(s.options).forEach(o=>o.selected=o.value===f); }
-(()=>{ const s=document.querySelector('.font-sel'); Array.from(s.options).forEach(o=>{ if(o.value===font) o.selected=true; }); })();
-function updateProg(){ const sc=document.getElementById('reader-scroll'); if(!sc) return; const p=sc.scrollHeight<=sc.clientHeight?100:(sc.scrollTop/(sc.scrollHeight-sc.clientHeight))*100; document.getElementById('prog-fill').style.width=p+'%'; }
-
-/* ═══ SIDEBAR MOBILE ═══ */
-function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sb-overlay').classList.toggle('active'); }
-function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('sb-overlay').classList.remove('active'); }
-
-/* ═══ ADMIN AUTH ═══ */
-async function sha256(str){
-  const b = new TextEncoder().encode(str);
-  const h = await crypto.subtle.digest('SHA-256',b);
-  return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('');
+async function saveHistory(ch){
+  try{ await sb.from('reading_history').upsert({user_id:ME.id,novel_slug:cur.slug,chapter_index:cur.idx,chapter_name:ch.name,updated_at:new Date().toISOString()},{onConflict:'user_id,novel_slug'}); }catch(e){}
 }
-async function adminLogin(){
-  const pw = document.getElementById('admin-pw').value;
-  if(!pw){showMsg('login-msg','err','Digite a senha.'); return;}
-  const hash = await sha256(pw);
-  const stored = localStorage.getItem('admin_pw_hash') || DEFAULT_PW_HASH;
-  if(hash===stored){
-    adminAuthed=true;
-    document.getElementById('admin-login-wrap').style.display='none';
-    document.getElementById('admin-panel').style.display='block';
-    // preencher campos salvos
-    const c = getGhConfig();
-    document.getElementById('gh-owner').value=c.owner;
-    document.getElementById('gh-repo').value=c.repo;
-    document.getElementById('gh-token').value=c.token;
-    document.getElementById('gh-folder').value=c.folder||'capitulos';
-  } else {
-    showMsg('login-msg','err','Senha incorreta.');
-  }
-}
-function adminLogout(){
-  adminAuthed=false;
-  document.getElementById('admin-login-wrap').style.display='block';
-  document.getElementById('admin-panel').style.display='none';
-  document.getElementById('admin-pw').value='';
-  goHome();
-}
-async function changePassword(){
-  const np=document.getElementById('new-pw').value;
-  const np2=document.getElementById('new-pw2').value;
-  if(!np){showMsg('pw-msg','err','Digite a nova senha.'); return;}
-  if(np!==np2){showMsg('pw-msg','err','As senhas não coincidem.'); return;}
-  const hash=await sha256(np);
-  localStorage.setItem('admin_pw_hash',hash);
-  showMsg('pw-msg','ok','Senha alterada.');
-  document.getElementById('new-pw').value='';
-  document.getElementById('new-pw2').value='';
-}
+function exitReader(){ go('novel',cur.slug); }
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); }
+function adjFs(d){ fs=Math.max(13,Math.min(26,fs+d)); localStorage.setItem('fs',fs); const a=document.getElementById('reader-article'); if(a)a.style.setProperty('--rs',fs+'px'); }
+function setFont(f){ font=f; localStorage.setItem('font',f); const a=document.getElementById('reader-article'); if(a)a.style.setProperty('--rf',f); }
+function updateProg(){ const sc=document.getElementById('reader-scroll'); if(!sc)return; const p=sc.scrollHeight<=sc.clientHeight?100:(sc.scrollTop/(sc.scrollHeight-sc.clientHeight))*100; document.getElementById('prog-fill').style.width=p+'%'; }
+(()=>{ const s=document.querySelector('.font-sel'); if(s) Array.from(s.options).forEach(o=>{if(o.value===font)o.selected=true;}); })();
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('view-reader').classList.contains('active'))return;
+  const chs=CHAP_CACHE[cur.slug]; if(!chs)return;
+  if(e.key==='ArrowRight'&&cur.idx<chs.length-1)goChapter(cur.idx+1);
+  if(e.key==='ArrowLeft'&&cur.idx>0)goChapter(cur.idx-1);
+  if(e.key==='Escape')exitReader();
+});
 
-/* ═══ FILE UPLOAD ═══ */
-const fd = document.getElementById('file-drop');
-fd.addEventListener('dragover',e=>{e.preventDefault();fd.classList.add('over');});
-fd.addEventListener('dragleave',()=>fd.classList.remove('over'));
-fd.addEventListener('drop',e=>{e.preventDefault();fd.classList.remove('over');addFiles(e.dataTransfer.files);});
+/* ═══ ADMIN ═══ */
+function renderAdmin(){
+  const g=document.getElementById('nf-genres');
+  g.innerHTML=GENRES.map(x=>`<button type="button" class="chip" data-g="${x.replace(/"/g,'')}" onclick="this.classList.toggle('on')">${x}</button>`).join('');
+  document.getElementById('gh-token').value=localStorage.getItem('gh_token')||'';
+  renderAdminNovels();
+}
+function renderAdminNovels(){
+  const el=document.getElementById('adm-novels');
+  el.innerHTML = NOVELS.length?NOVELS.map(n=>`<div class="adm-novel"><div class="t">${esc(n.title)}<div class="sl">${esc(n.slug)} · pasta: ${esc(n.gh_folder||'—')}</div></div>
+    <button onclick="editNovel('${n.slug}')">Editar</button><button onclick="delNovel('${n.slug}')">Excluir</button></div>`).join(''):`<div style="color:var(--text-mute);font-family:sans-serif;font-size:.8rem">Nenhuma novel ainda.</div>`;
+}
+function slugify(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+function clearNovelForm(){
+  ['nf-editing','nf-title','nf-author','nf-slug','nf-folder','nf-cover','nf-desc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nf-status').value='Em andamento';
+  document.querySelectorAll('#nf-genres .chip').forEach(c=>c.classList.remove('on'));
+  admMsg('nf-msg','','');
+}
+function editNovel(slug){
+  const n=novelBySlug(slug); if(!n)return;
+  document.getElementById('nf-editing').value=slug;
+  document.getElementById('nf-title').value=n.title||'';
+  document.getElementById('nf-author').value=n.author||'';
+  document.getElementById('nf-slug').value=n.slug||'';
+  document.getElementById('nf-folder').value=n.gh_folder||'';
+  document.getElementById('nf-cover').value=n.cover_url||'';
+  document.getElementById('nf-desc').value=n.description||'';
+  document.getElementById('nf-status').value=n.status||'Em andamento';
+  document.querySelectorAll('#nf-genres .chip').forEach(c=>c.classList.toggle('on',(n.genres||[]).includes(c.dataset.g)));
+  window.scrollTo(0,0);
+}
+async function saveNovel(){
+  const title=document.getElementById('nf-title').value.trim();
+  const folder=document.getElementById('nf-folder').value.trim();
+  if(!title||!folder){ admMsg('nf-msg','err','Título e pasta dos capítulos são obrigatórios.'); return; }
+  const editing=document.getElementById('nf-editing').value;
+  let slug=document.getElementById('nf-slug').value.trim()||slugify(title);
+  const genres=[...document.querySelectorAll('#nf-genres .chip.on')].map(c=>c.dataset.g);
+  const row={slug,title,author:document.getElementById('nf-author').value.trim(),
+    description:document.getElementById('nf-desc').value.trim(),cover_url:document.getElementById('nf-cover').value.trim(),
+    status:document.getElementById('nf-status').value,genres,gh_folder:folder,updated_at:new Date().toISOString()};
+  try{
+    if(editing && editing!==slug){ await sb.from('novels').update(row).eq('slug',editing); }
+    else { await sb.from('novels').upsert(row,{onConflict:'slug'}); }
+    admMsg('nf-msg','ok','Novel salva.'); delete CHAP_CACHE[slug];
+    await loadNovels(); renderAdminNovels(); clearNovelForm();
+  }catch(e){ admMsg('nf-msg','err','Erro: '+e.message); }
+}
+async function delNovel(slug){
+  if(!confirm('Excluir esta novel? (os arquivos no GitHub não são apagados)')) return;
+  await sb.from('novels').delete().eq('slug',slug);
+  await loadNovels(); renderAdminNovels();
+}
+function admMsg(id,type,txt){ const el=document.getElementById(id); el.className='msg'+(txt?' show '+type:''); el.textContent=txt; }
 
+/* upload to github */
+const fdrop=document.getElementById('file-drop');
+fdrop.addEventListener('dragover',e=>{e.preventDefault();fdrop.classList.add('over');});
+fdrop.addEventListener('dragleave',()=>fdrop.classList.remove('over'));
+fdrop.addEventListener('drop',e=>{e.preventDefault();fdrop.classList.remove('over');addFiles(e.dataTransfer.files);});
 function addFiles(files){
-  Array.from(files).forEach(f=>{
-    if(!f.name.endsWith('.html')) return;
-    if(!pendingFiles.find(p=>p.name===f.name)) pendingFiles.push(f);
-  });
-  renderPendingFiles();
+  Array.from(files).forEach(f=>{ if(f.name.endsWith('.html') && !pendingFiles.find(p=>p.name===f.name)) pendingFiles.push(f); });
+  document.getElementById('up-list').innerHTML=pendingFiles.map((f,i)=>`<div class="adm-novel"><div class="t">${esc(f.name)}</div><button onclick="rmFile(${i})">✕</button></div>`).join('');
 }
-function renderPendingFiles(){
-  const fl = document.getElementById('file-list');
-  if(!pendingFiles.length){fl.innerHTML=''; return;}
-  fl.innerHTML = pendingFiles.map((f,i)=>`
-    <div class="file-item">
-      <span class="fn">${f.name}</span>
-      <span class="fs">${(f.size/1024).toFixed(1)} KB</span>
-      <span class="rm" onclick="removeFile(${i})">✕</span>
-    </div>`).join('');
-}
-function removeFile(i){ pendingFiles.splice(i,1); renderPendingFiles(); }
-
+function rmFile(i){ pendingFiles.splice(i,1); addFiles([]); }
 async function uploadFiles(){
-  if(!pendingFiles.length){showMsg('up-msg','err','Nenhum arquivo para enviar.'); return;}
-  const {owner,repo,token,folder}=getGhConfig();
-  if(!owner||!repo||!token){showMsg('up-msg','err','Configure o GitHub primeiro.'); return;}
-
-  const bar=document.getElementById('up-progress');
-  const fill=document.getElementById('up-prog-fill');
-  bar.style.display='block'; fill.style.width='0%';
-  showMsg('up-msg','ok','Enviando…');
-
-  let ok=0, fail=0;
-  for(let i=0;i<pendingFiles.length;i++){
-    const f=pendingFiles[i];
-    fill.style.width=((i/pendingFiles.length)*100)+'%';
+  const token=document.getElementById('gh-token').value.trim();
+  const folder=document.getElementById('up-folder').value.trim()||'capitulos';
+  if(!token){ admMsg('up-msg','err','Cole o token do GitHub.'); return; }
+  if(!pendingFiles.length){ admMsg('up-msg','err','Nenhum arquivo selecionado.'); return; }
+  localStorage.setItem('gh_token',token);
+  admMsg('up-msg','ok','Enviando…');
+  let ok=0,fail=0;
+  for(const f of pendingFiles){
     try{
-      const text = await f.text();
-      const b64 = btoa(unescape(encodeURIComponent(text)));
-      const path = `${folder}/${f.name}`;
-      // verificar se já existe para pegar o SHA
-      let sha = undefined;
-      try{
-        const ex = await ghApi(`/repos/${owner}/${repo}/contents/${path}`);
-        sha = ex.sha;
-      } catch(_){}
-      await ghApi(`/repos/${owner}/${repo}/contents/${path}`,'PUT',{
-        message: sha?`Atualizar ${f.name}`:`Adicionar ${f.name}`,
-        content: b64,
-        ...(sha?{sha}:{})
-      });
-      ok++;
-    } catch(e){ console.error(f.name,e); fail++; }
+      const text=await f.text();
+      const b64=btoa(unescape(encodeURIComponent(text)));
+      const path=`${folder}/${f.name}`;
+      let sha;
+      try{ const ex=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,{headers:{Authorization:'token '+token}}).then(r=>r.ok?r.json():null); sha=ex?.sha; }catch(_){}
+      const r=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,{method:'PUT',
+        headers:{Authorization:'token '+token,'Content-Type':'application/json'},
+        body:JSON.stringify({message:(sha?'Atualizar ':'Adicionar ')+f.name,content:b64,...(sha?{sha}:{})})});
+      if(r.ok) ok++; else fail++;
+    }catch(e){ fail++; }
   }
-
-  fill.style.width='100%';
-  setTimeout(()=>{bar.style.display='none';},800);
-  showMsg('up-msg', fail?'err':'ok', `${ok} arquivo${ok!==1?'s':''} enviado${ok!==1?'s':''}${fail?` · ${fail} falha(s)`:''}.`);
-  if(ok) { pendingFiles=[]; renderPendingFiles(); listRepoFiles(); }
-}
-
-async function listRepoFiles(){
-  const {owner,repo,folder}=getGhConfig();
-  const el=document.getElementById('repo-file-list');
-  if(!owner||!repo){el.innerHTML='<div style="color:var(--text-mute);font-family:sans-serif;font-size:.75rem">Configure o GitHub primeiro.</div>'; return;}
-  el.innerHTML='<div style="color:var(--text-mute);font-family:sans-serif;font-size:.75rem">Carregando…</div>';
-  try{
-    const files=await ghApi(`/repos/${owner}/${repo}/contents/${folder}`);
-    const htmls=files.filter(f=>f.name.endsWith('.html')).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
-    if(!htmls.length){el.innerHTML='<div style="color:var(--text-mute);font-family:sans-serif;font-size:.75rem">Nenhum HTML na pasta.</div>'; return;}
-    el.innerHTML=htmls.map(f=>`
-      <div class="repo-file">
-        <span class="rfn">📄 ${f.name}</span>
-        <span style="font-family:sans-serif;font-size:.65rem;color:var(--text-mute)">${(f.size/1024).toFixed(1)} KB</span>
-        <button class="del-btn" onclick="deleteRepoFile('${f.path}','${f.sha}','${f.name}')">🗑 Remover</button>
-      </div>`).join('');
-  } catch(e){ el.innerHTML=`<div style="color:#f87171;font-family:sans-serif;font-size:.75rem">Erro: ${e.message}</div>`; }
-}
-
-async function deleteRepoFile(path, sha, name){
-  if(!confirm(`Remover "${name}" do repositório?`)) return;
-  const {owner,repo}=getGhConfig();
-  try{
-    await ghApi(`/repos/${owner}/${repo}/contents/${path}`,'DELETE',{message:`Remover ${name}`,sha});
-    toast(`${name} removido`);
-    listRepoFiles();
-  } catch(e){ toast('Erro: '+e.message); }
+  admMsg('up-msg',fail?'err':'ok',`${ok} enviado(s)${fail?` · ${fail} falha(s)`:''}.`);
+  if(ok){ pendingFiles=[]; document.getElementById('up-list').innerHTML=''; Object.keys(CHAP_CACHE).forEach(k=>delete CHAP_CACHE[k]); }
 }
 
 /* ═══ HELPERS ═══ */
-function showMsg(id, type, text){
-  const el=document.getElementById(id);
-  if(!el) return;
-  el.innerHTML=`<div class="msg ${type}">${text}</div>`;
-}
-let toastTimer;
-function toast(msg){
-  const el=document.getElementById('toast');
-  el.textContent=msg; el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>el.classList.remove('show'),2500);
-}
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function toggleMenu(e){ e.stopPropagation(); document.getElementById('user-menu').classList.toggle('open'); }
+document.addEventListener('click',()=>document.getElementById('user-menu').classList.remove('open'));
+let toastT;
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),2500); }
 
-/* ═══ KEYBOARD ═══ */
-document.addEventListener('keydown',e=>{
-  if(document.getElementById('view-reader').classList.contains('active')){
-    if(e.key==='ArrowRight'||e.key==='PageDown'){ const n=novels[cur.slug]; if(n&&cur.idx<n.chapters.length-1) goChapter(cur.idx+1); }
-    if(e.key==='ArrowLeft'||e.key==='PageUp'){ if(cur.idx>0) goChapter(cur.idx-1); }
-    if(e.key==='Escape') goHome();
-  }
-});
-
-/* ═══ BOOT ═══ */
-(()=>{
-  // restaurar progresso ao abrir
-  const {owner,repo} = getGhConfig();
-  if(owner && repo) loadNovels();
-  else {
-    document.getElementById('novels-grid').innerHTML=`<div class="empty"><div class="ei">⚙</div>Configure o GitHub no admin (ícone ⚙ no topo) para começar.</div>`;
-    document.getElementById('lib-count').textContent='—';
-    document.getElementById('status-area').innerHTML=`<div class="status-banner" style="margin:0 20px 16px">Configure o repositório GitHub no admin para carregar as novels.</div>`;
-  }
-})();
+/* ═══ START ═══ */
+setAuthMode('login');
+boot();
 </script>
-<script>if("serviceWorker" in navigator){ navigator.serviceWorker.register("/sw.js").catch(()=>{}); }</script>
+<script>if('serviceWorker' in navigator){ navigator.serviceWorker.register('/sw.js').catch(()=>{}); }</script>
 </body>
 </html>
