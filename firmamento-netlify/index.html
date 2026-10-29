@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0c10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Firmamento">
+<link rel="manifest" href="manifest.json">
+<title>Firmamento</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="view-login" class="view">
+  <div class="login-card">
+    <div class="brand"><div class="ic">☯</div><div class="tx">Firma<span style="color:var(--accent)">mento</span></div></div>
+    <div class="login-sub">Entre para acessar a biblioteca</div>
+    <div class="login-tabs">
+      <button id="tab-login" class="active" onclick="setAuthMode('login')">Entrar</button>
+      <button id="tab-signup" onclick="setAuthMode('signup')">Criar conta</button>
+    </div>
+    <div class="field" id="field-name" style="display:none"><label>Nome de usuário</label><input type="text" id="au-name" placeholder="seu apelido"></div>
+    <div class="field"><label>Email</label><input type="email" id="au-email" placeholder="voce@email.com"></div>
+    <div class="field"><label>Senha</label><input type="password" id="au-pass" placeholder="••••••••"></div>
+    <button class="btn-full" id="au-btn" onclick="doAuth()">Entrar</button>
+    <div class="auth-msg" id="auth-msg"></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav id="nav" style="display:none">
+  <div class="logo" onclick="go('home')"><div class="ic">☯</div><div class="tx">Firma<span>mento</span></div></div>
+  <div class="nav-links">
+    <a onclick="go('home')" data-nav="home">Início</a>
+    <a onclick="go('catalog')" data-nav="catalog">Catálogo</a>
+    <a onclick="go('library')" data-nav="library">Biblioteca</a>
+    <a onclick="go('admin')" data-nav="admin" id="nav-admin" style="display:none">Admin</a>
+  </div>
+  <input class="nav-search" id="nav-search" placeholder="Buscar novel ou autor..." oninput="navSearch(this.value)">
+  <div class="nav-spacer"></div>
+  <button class="nav-ic" onclick="toggleTheme()" title="Tema">◑</button>
+  <div class="user-chip" onclick="toggleMenu(event)">
+    <div class="av" id="u-av">?</div>
+    <div class="nm" id="u-nm">—</div>
+  </div>
+  <div class="menu" id="user-menu">
+    <div class="role" id="u-role">—</div>
+    <button onclick="go('library')">Minha biblioteca</button>
+    <button onclick="go('admin')" id="menu-admin" style="display:none">Painel admin</button>
+    <button onclick="doLogout()">Sair</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div id="view-home" class="view"><div class="wrap" id="home-wrap"></div></div>
+
+<!-- CATALOG -->
+<div id="view-catalog" class="view"><div class="wrap">
+  <div class="sec-head"><h2>Catálogo</h2><span class="ct" id="cat-count"></span></div>
+  <div class="filters">
+    <div class="filter-row"><input class="filter-search" id="cat-search" placeholder="Buscar por nome ou autor..." oninput="renderCatalog()"></div>
+    <div class="filter-row" id="cat-status"><span class="lab">Status</span></div>
+    <div class="filter-row" id="cat-genres"><span class="lab">Gêneros</span></div>
+  </div>
+  <div class="grid" id="cat-grid"></div>
+</div></div>
+
+<!-- LIBRARY -->
+<div id="view-library" class="view"><div class="wrap" id="library-wrap"></div></div>
+
+<!-- NOVEL -->
+<div id="view-novel" class="view"><div class="wrap" id="novel-wrap"></div></div>
+
+<!-- READER -->
+<div id="view-reader" class="view">
+  <div class="sidebar" id="sidebar">
+    <div class="sb-head"><span class="sb-title" id="sb-title">Capítulos</span><button class="nav-ic" onclick="exitReader()" title="Voltar">←</button></div>
+    <div class="sb-list" id="sb-list"></div>
+  </div>
+  <div class="reader-main">
+    <div class="reader-toolbar">
+      <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+      <button class="nav-ic sb-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="tb-title" id="tb-title">—</div>
+      <button class="font-btn" onclick="adjFs(-1)">A−</button>
+      <button class="font-btn" onclick="adjFs(1)">A+</button>
+      <div class="tb-sep"></div>
+      <select class="font-sel" onchange="setFont(this.value)">
+        <option value="Georgia,serif">Serif</option>
+        <option value="'Palatino Linotype',Palatino,serif">Palatino</option>
+        <option value="system-ui,sans-serif">Sans</option>
+        <option value="'Courier New',monospace">Mono</option>
+      </select>
+    </div>
+    <div class="reader-scroll" id="reader-scroll" onscroll="updateProg()">
+      <article class="reader-article" id="reader-article"></article>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="view-admin" class="view"><div class="wrap">
+  <div class="sec-head"><h2>Painel administrativo</h2></div>
+  <p style="font-family:sans-serif;font-size:.78rem;color:var(--text-dim);margin:-8px 0 20px;line-height:1.6">
+    Duas formas de ter novels no catálogo:
+    <b>1) Automática</b> — qualquer pasta com HTML dentro de <code>capitulos/</code> no próprio site já aparece sozinha (auto-scan via <code>capitulos/index.json</code>, gerado pelo script em <code>scripts/gerar_manifesto.py</code>).
+    <b>2) Cadastro</b> — use o formulário abaixo para dar capa, sinopse, gêneros e status. Cadastrar uma pasta que já vinha automática apenas a enriquece, sem duplicar.
+    Para adicionar capítulos novos: coloque os HTMLs na pasta <code>capitulos/</code> no seu PC, rode o script pra atualizar o <code>index.json</code>, e arraste a pasta do site de novo no Netlify.
+  </p>
+
+  <div class="admin-section">
+    <h3>Cadastrar / editar novel</h3>
+    <input type="hidden" id="nf-editing">
+    <div class="grid2">
+      <div><label class="label">Título *</label><input type="text" id="nf-title" placeholder="Nome da novel"></div>
+      <div><label class="label">Autor</label><input type="text" id="nf-author" placeholder="Autor"></div>
+    </div>
+    <div class="grid2">
+      <div><label class="label">Slug (identificador, sem espaço)</label><input type="text" id="nf-slug" placeholder="gerado do título se vazio"></div>
+      <div><label class="label">Pasta dos capítulos</label><input type="text" id="nf-folder" placeholder="capitulos"></div>
+    </div>
+    <div class="grid2">
+      <div><label class="label">Status</label><select id="nf-status"><option>Em andamento</option><option>Completo</option><option>Hiato</option><option>Em breve</option></select></div>
+      <div>
+        <label class="label">Capa</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button type="button" class="btn-admin sec" onclick="document.getElementById('nf-cover-file').click()">🖼 Escolher imagem</button>
+          <input type="file" id="nf-cover-file" accept="image/*" style="display:none" onchange="handleCoverFile(this.files[0])">
+          <img id="nf-cover-preview" alt="" style="display:none;width:38px;height:57px;object-fit:cover;border-radius:5px;border:1px solid var(--border)">
+          <button type="button" id="nf-cover-clear" onclick="clearCover()" title="Remover capa" style="display:none;font-family:sans-serif;font-size:.7rem;color:#f87171">remover</button>
+        </div>
+        <span id="nf-cover-status" style="display:block;font-family:sans-serif;font-size:.68rem;color:var(--text-mute);margin-top:5px"></span>
+        <input type="text" id="nf-cover" placeholder="…ou cole uma URL de imagem" style="margin-top:6px" oninput="onCoverUrlInput()">
+      </div>
+    </div>
+    <label class="label">Descrição</label>
+    <textarea id="nf-desc" placeholder="Sinopse da novel..."></textarea>
+    <label class="label">Gêneros</label>
+    <div class="genre-pick" id="nf-genres"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn-admin" onclick="saveNovel()">💾 Salvar novel</button>
+      <button class="btn-admin sec" onclick="clearNovelForm()">Limpar</button>
+    </div>
+    <div class="msg" id="nf-msg"></div>
+  </div>
+
+  <div class="admin-section">
+    <h3>Novels cadastradas</h3>
+    <div class="admin-novels" id="adm-novels"></div>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/router.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/novel.js"></script>
+<script src="js/reader.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+<script>if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }</script>
+</body>
+</html>
